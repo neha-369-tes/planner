@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowState — Daily Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Init ring so it renders correctly before JS runs */
+    #timerRing { stroke-dasharray: 427.26; stroke-dashoffset: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">FlowState</span>
+    </div>
+    <div class="topbar-center">
+      <div class="xp-container">
+        <span class="xp-label">XP</span>
+        <div class="xp-bar-track">
+          <div class="xp-bar-fill" style="width: 38%"></div>
+        </div>
+        <span class="xp-level">Lv.1</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="streak-badge">
+        <span class="streak-icon">🔥</span>
+        <span class="streak-count">1</span>
+        <span class="streak-label">day streak</span>
+      </div>
+      <button class="add-task-btn" id="addTaskBtn">+ Add Task</button>
+    </div>
+  </header>
+
+  <!-- MAIN GRID -->
+  <main class="dashboard-grid">
+
+    <!-- LEFT COLUMN: Focus Timer -->
+    <aside class="col-left">
+      <section class="focus-panel">
+        <h3 class="panel-title">
+          <span class="panel-icon">🎯</span> Focus Mode
+        </h3>
+        <div class="focus-task-selector" id="focusLabel">Select a task to focus on</div>
+
+        <!-- Circular Timer -->
+        <div class="timer-ring-wrapper">
+          <svg class="timer-svg" viewBox="0 0 160 160">
+            <circle class="ring-track" cx="80" cy="80" r="68" />
+            <circle class="ring-progress" cx="80" cy="80" r="68" id="timerRing"
+              stroke-dasharray="427.26"
+              stroke-dashoffset="0" />
+          </svg>
+          <div class="timer-display">
+            <span class="timer-time" id="timerDisplay">25:00</span>
+            <span class="timer-mode-label" id="timerModeLabel">FOCUS</span>
+          </div>
+        </div>
+
+        <!-- Pomodoro Controls -->
+        <div class="pomo-controls">
+          <button class="pomo-btn" id="startBtn" title="Start">▶ Start</button>
+          <button class="pomo-btn pomo-btn--ghost" id="resetBtn" title="Reset">↺ Reset</button>
+        </div>
+
+        <!-- Duration Presets -->
+        <div class="duration-presets">
+          <button class="preset-chip active" data-minutes="25" data-mode="Focus">Focus 25m</button>
+          <button class="preset-chip" data-minutes="5" data-mode="Break">Break 5m</button>
+          <button class="preset-chip" data-minutes="15" data-mode="Long">Long 15m</button>
+        </div>
+
+        <!-- Motivational Quote -->
+        <div class="moti-quote" id="motiQuote">Done &gt; Perfect. Ship it, then polish.</div>
+
+        <!-- Session Stats -->
+        <div class="session-stats">
+          <div class="stat-cell">
+            <span class="stat-val" id="sessionCount">0</span>
+            <span class="stat-key">Sessions</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-val" id="focusedMin">0m</span>
+            <span class="stat-key">Focused</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-val" id="doneToday">0</span>
+            <span class="stat-key">Done Today</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mood Selector -->
+      <section class="mood-panel">
+        <h3 class="panel-title"><span class="panel-icon">🧠</span> How are you feeling?</h3>
+        <div class="mood-chips">
+          <button class="mood-chip" data-mood="Focused">😤 Focused</button>
+          <button class="mood-chip" data-mood="Happy">😊 Happy</button>
+          <button class="mood-chip" data-mood="Meh">😐 Meh</button>
+          <button class="mood-chip active" data-mood="Tired">😴 Tired</button>
+          <button class="mood-chip" data-mood="Anxious">😰 Anxious</button>
+          <button class="mood-chip" data-mood="Hyper">⚡ Hyper</button>
+        </div>
+        <div class="mood-message" id="moodMessage">😴 Tired? Start with ONE small task, then rest. You can do it!</div>
+      </section>
+    </aside>
+
+    <!-- CENTER COLUMN: Today's Tasks -->
+    <section class="col-center">
+      <div class="today-header">
+        <div>
+          <h1 class="today-title">Today's Mission</h1>
+          <p class="today-date" id="todayDate">Monday, March 16</p>
+        </div>
+        <div class="task-filter-tabs">
+          <button class="filter-tab active" data-filter="all">All</button>
+          <button class="filter-tab" data-filter="todo">Todo</button>
+          <button class="filter-tab" data-filter="active">Active</button>
+          <button class="filter-tab" data-filter="done">Done</button>
+        </div>
+      </div>
+
+      <p class="task-progress-label" id="taskProgressLabel">0 of 1 tasks complete</p>
+
+      <!-- Task List -->
+      <div class="task-list" id="taskList">
+
+        <!-- Carry-over task (from previous day) -->
+        <div class="task-card carry-over" data-status="todo" data-id="0">
+          <div class="task-check-col">
+            <button class="task-checkbox" data-id="0"></button>
+          </div>
+          <div class="task-body">
+            <div class="task-top-row">
+              <span class="task-name">Review project brief</span>
+              <div class="task-actions">
+                <button class="task-focus-btn" title="Focus on this task" data-id="0">🎯</button>
+                <button class="task-delete-btn" title="Delete" data-id="0">✕</button>
+              </div>
+            </div>
+            <div class="task-meta">
+              <span class="tag-pill tag-work">Work</span>
+              <span class="duration-dot">⏱ 45m</span>
+              <span class="priority-badge priority-medium">Medium</span>
+              <span class="carryover-label">carry-over</span>
+            </div>
+            <p class="task-note"><em>From yesterday — don't forget this one</em></p>
+          </div>
+        </div>
+
+        <!-- Normal task -->
+        <div class="task-card" data-status="todo" data-id="1">
+          <div class="task-check-col">
+            <button class="task-checkbox" data-id="1"></button>
+          </div>
+          <div class="task-body">
+            <div class="task-top-row">
+              <span class="task-name">leetcode</span>
+              <div class="task-actions">
+                <button class="task-focus-btn" title="Focus on this task" data-id="1">🎯</button>
+                <button class="task-delete-btn" title="Delete" data-id="1">✕</button>
+              </div>
+            </div>
+            <div class="task-meta">
+              <span class="tag-pill tag-interview">Interview</span>
+              <span class="duration-dot">⏱ 30m</span>
+              <span class="priority-badge priority-high">High</span>
+            </div>
+            <p class="task-note"><em>focus on why, how and where</em></p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <p>No tasks here. Add one to get started.</p>
+      </div>
+
+      <!-- Monthly Checklist + Heatmap -->
+      <section class="month-sheet-panel">
+        <div class="month-sheet-header">
+          <h2 class="month-sheet-title">Yearly Checklist</h2>
+          <p class="month-sheet-sub" id="monthSheetLabel">Mar 2026 - Mar 2027</p>
+        </div>
+        <p class="month-sheet-progress" id="monthSheetProgress">0 / 0 days checked</p>
+        <div class="month-heatmap-shell">
+          <div class="heatmap-day-labels">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
+          </div>
+          <div class="year-heatmap-wrap">
+            <div class="month-axis" id="monthAxis"></div>
+            <div class="month-heatmap-grid" id="monthHeatmapGrid"></div>
+          </div>
+        </div>
+        <div class="heatmap-legend">
+          <span>Less</span>
+          <span class="legend-box heat-0"></span>
+          <span class="legend-box heat-1"></span>
+          <span class="legend-box heat-2"></span>
+          <span class="legend-box heat-3"></span>
+          <span class="legend-box heat-4"></span>
+          <span>More</span>
+        </div>
+      </section>
+    </section>
+
+    <!-- RIGHT COLUMN: Goals, Schedule, AI -->
+    <aside class="col-right">
+
+      <!-- Career Goals -->
+      <section class="goals-panel">
+        <h3 class="panel-title"><span class="panel-icon">🏆</span> Career Goals</h3>
+        <div class="goal-bars" id="goalBars">
+          <div class="goal-item">
+            <div class="goal-top">
+              <span class="goal-icon">💼</span>
+              <span class="goal-name">Land First Job</span>
+              <span class="goal-pct">0%</span>
+            </div>
+            <div class="goal-bar-track">
+              <div class="goal-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="goal-item">
+            <div class="goal-top">
+              <span class="goal-icon">📚</span>
+              <span class="goal-name">Learn New Skill</span>
+              <span class="goal-pct mint">100%</span>
+            </div>
+            <div class="goal-bar-track">
+              <div class="goal-bar-fill goal-bar-full" style="width:100%"></div>
+            </div>
+          </div>
+          <div class="goal-item">
+            <div class="goal-top">
+              <span class="goal-icon">🌐</span>
+              <span class="goal-name">Build Portfolio</span>
+              <span class="goal-pct">0%</span>
+            </div>
+            <div class="goal-bar-track">
+              <div class="goal-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <button class="edit-goals-btn" id="editGoalsBtn">⚙ Edit Goals</button>
+      </section>
+
+    </aside>
+  </main>
+
+  <section class="agent-bottom-wrap">
+    <!-- AI Suggestion -->
+    <section class="ai-panel">
+      <div class="planner-chat-shell">
+        <div class="planner-chat-head">
+          <h4>Agent Planner Chat</h4>
+          <span>DeepSeek + Memory</span>
+        </div>
+
+        <div class="planner-chat-log" id="plannerChatLog"></div>
+        <p class="planner-import-status" id="plannerImportStatus">Upload a plan document or ask directly in chat.</p>
+
+        <input class="planner-import-input" type="file" id="taskDocInput" accept=".txt,.md,.csv,.xlsx,.xls,.docx,.pdf" hidden />
+        <div class="planner-chat-composer">
+          <button id="uploadDocBtn" class="planner-upload-btn" title="Upload document" aria-label="Upload document">+</button>
+          <input id="plannerChatInput" class="planner-chat-input" type="text" placeholder="Ask anything about your schedule..." />
+          <button id="plannerChatSendBtn" class="planner-chat-send" title="Send message" aria-label="Send message">Send</button>
+        </div>
+      </div>
+      <button class="ai-chip" id="aiChip">
+        <span class="ai-pulse"></span>
+        <span class="ai-text">✦ What's next?</span>
+      </button>
+      <div class="ai-response" id="aiResponse"></div>
+
+      <section class="schedule-panel">
+        <h3 class="panel-title"><span class="panel-icon">🕐</span> Day Schedule <span id="scheduleDayLabel">Today</span></h3>
+        <div class="schedule-day-nav">
+          <button id="schedulePrevDayBtn" class="schedule-day-btn" type="button">Prev</button>
+          <button id="scheduleTodayBtn" class="schedule-day-btn active" type="button">Today</button>
+          <button id="scheduleNextDayBtn" class="schedule-day-btn" type="button">Next</button>
+        </div>
+        <div class="schedule-slots" id="scheduleSlots">
+          <p class="no-slots-msg">No time-blocked tasks yet</p>
+        </div>
+        <p class="schedule-hint" id="scheduleHint">Chat updates will appear here for the selected day.</p>
+      </section>
+    </section>
+  </section>
+
+  <!-- ADD TASK MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">New Task</h2>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Task Name</label>
+          <input type="text" class="form-input" id="taskNameInput" placeholder="What needs to be done?" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tag</label>
+            <select class="form-input form-select" id="taskTag">
+              <option value="interview">Interview</option>
+              <option value="work">Work</option>
+              <option value="learning">Learning</option>
+              <option value="personal">Personal</option>
+              <option value="health">Health</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration</label>
+            <select class="form-input form-select" id="taskDuration">
+              <option value="15m">15m</option>
+              <option value="30m" selected>30m</option>
+              <option value="45m">45m</option>
+              <option value="1h">1h</option>
+              <option value="2h">2h</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select class="form-input form-select" id="taskPriority">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note <span class="optional">(optional)</span></label>
+          <input type="text" class="form-input" id="taskNote" placeholder="Any context or intention..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelBtn">Cancel</button>
+        <button class="btn-create" id="createTaskBtn">Create Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT GOALS MODAL -->
+  <div class="modal-overlay" id="goalsModalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Career Goals</h2>
+        <button class="modal-close" id="goalsModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="goalsModalBody">
+        <!-- dynamically rendered -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="goalsCancelBtn">Cancel</button>
+        <button class="btn-create" id="saveGoalsBtn">Save Goals</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

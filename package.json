@@ -1,0 +1,27 @@
+{
+  "name": "flowstate-planner",
+  "version": "1.0.0",
+  "description": "FlowState — AI-native daily planner dashboard",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx live-server --port=3000 --open=index.html --no-browser=false --watch=index.html,style.css,app.js",
+    "dev": "npx live-server --port=3000 --watch=index.html,style.css,app.js",
+    "serve": "python -m http.server 3000",
+    "api": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "keywords": ["planner", "pomodoro", "productivity", "dashboard"],
+  "author": "",
+  "license": "MIT"
+}
