@@ -12,12 +12,12 @@
 
 // ── YOUR FIREBASE CONFIG — replace all values ──────────────
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyAVNxAljMNsSoVPaQYQHG_Vv3yHpRfSl1I",
+  authDomain:        "flowstate-a05d5.firebaseapp.com",
+  projectId:         "flowstate-a05d5",
+  storageBucket:     "flowstate-a05d5.firebasestorage.app",
+  messagingSenderId: "560504440983",
+  appId:             "1:560504440983:web:5d09cc76107d489c0bc1d2"
 };
 // ───────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ import { getAuth, onAuthStateChanged,
          createUserWithEmailAndPassword,
          signInWithEmailAndPassword,
          signInWithPopup, GoogleAuthProvider,
-         signOut, updateProfile }                 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+         signOut, updateProfile, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc,
          updateDoc, serverTimestamp }             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -93,6 +93,12 @@ function buildAuthOverlay() {
         </button>
         <p class="auth-error" id="signupError"></p>
       </div>
+
+      <!-- VERIFY -->
+      <div class="auth-form hidden" id="verifyForm">
+        <p class="auth-sub" style="margin:0; text-align:center;"></p>
+      </div>
+
     </div>
   `;
   document.body.prepend(div);
@@ -229,6 +235,7 @@ function bindAuthEvents() {
       const target = tab.dataset.tab;
       document.getElementById('loginForm').classList.toggle('hidden', target !== 'login');
       document.getElementById('signupForm').classList.toggle('hidden', target !== 'signup');
+      document.getElementById('verifyForm').classList.add('hidden');
     });
   });
 
@@ -247,6 +254,7 @@ function bindAuthEvents() {
     setLoading('loginBtn', true);
     try {
       await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged will handle routing verified/unverified users
     } catch (e) {
       setAuthError('loginError', friendlyFirebaseError(e.code));
       setLoading('loginBtn', false);
@@ -266,7 +274,20 @@ function bindAuthEvents() {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(cred.user, { displayName: name });
-      // Firestore profile doc is created in onAuthStateChanged below
+      await sendEmailVerification(cred.user);
+
+      // Show verification message
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+      const verifyForm = document.getElementById('verifyForm');
+      verifyForm.classList.remove('hidden');
+      verifyForm.querySelector('p').innerHTML = `
+        Verification email sent to <b>${email}</b>.
+        <br><br>
+        Please check your inbox and click the link to finish signing up.
+      `;
+      document.querySelector('.auth-tabs').style.display = 'none';
+
     } catch (e) {
       setAuthError('signupError', friendlyFirebaseError(e.code));
       setLoading('signupBtn', false);
@@ -318,10 +339,6 @@ function friendlyFirebaseError(code) {
 //  FIRESTORE SYNC  (called from app.js)
 // ============================================================
 
-/**
- * Load user data from Firestore into state.
- * Returns the merged state object or null if no data exists yet.
- */
 window.fsLoadUserData = async function(uid) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
@@ -333,10 +350,6 @@ window.fsLoadUserData = async function(uid) {
   }
 };
 
-/**
- * Save state to Firestore (debounced — called by app.js save()).
- * Only persists the fields that matter for cloud sync.
- */
 let _saveTimer = null;
 window.fsSaveUserData = function(uid, stateSnapshot) {
   clearTimeout(_saveTimer);
@@ -365,9 +378,6 @@ window.fsSaveUserData = function(uid, stateSnapshot) {
   }, 800); // debounce 800ms
 };
 
-/**
- * Create a fresh profile document for new users.
- */
 window.fsCreateUserProfile = async function(user) {
   try {
     const ref = doc(db, 'users', user.uid);
@@ -407,53 +417,64 @@ onAuthStateChanged(auth, async (user) => {
   const agentWrap = document.querySelector('.agent-bottom-wrap');
 
   if (user) {
-    // ── Logged IN ──────────────────────────────────────────
-    window.__fs_currentUid = user.uid;
+    // --- USER IS SIGNED IN ---
+    if (user.emailVerified) {
+      // ── 1. VERIFIED: Access granted ──────────────────────
+      window.__fs_currentUid = user.uid;
+      await window.fsCreateUserProfile(user); // Create profile if brand new
+      const cloudData = await window.fsLoadUserData(user.uid);
+      if (cloudData && window.__fs_onDataLoaded) {
+        window.__fs_onDataLoaded(cloudData);
+      }
 
-    // Create profile if brand new
-    await window.fsCreateUserProfile(user);
+      // Inject user badge
+      const topbarRight = document.querySelector('.topbar-right');
+      if (topbarRight && !document.getElementById('userBadge')) {
+        const initials = (user.displayName || user.email || 'U')
+          .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const badge = document.createElement('div');
+        badge.id = 'userBadge';
+        badge.innerHTML = `
+          <div id="userAvatar">
+            ${user.photoURL
+              ? `<img src="${user.photoURL}" alt="avatar" referrerpolicy="no-referrer" />`
+              : initials}
+          </div>
+          <span id="userDisplayName">${user.displayName || user.email}</span>
+          <button id="signOutBtn">Sign out</button>
+        `;
+        topbarRight.prepend(badge);
+        document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
+      }
 
-    // Load cloud data → merge into state (if app.js init hasn't run yet)
-    const cloudData = await window.fsLoadUserData(user.uid);
-    if (cloudData && window.__fs_onDataLoaded) {
-      window.__fs_onDataLoaded(cloudData);
+      // Show app, hide overlay
+      [dashboard, topbar, agentWrap].forEach(el => { if (el) el.style.visibility = 'visible'; });
+      overlay.classList.add('hide');
+      setTimeout(() => { overlay.style.display = 'none'; }, 380);
+
+    } else {
+      // ── 2. NOT VERIFIED: Show message ────────────────────
+      setAuthError('loginError', 'Please check your inbox and verify your email to continue.');
+      setLoading('loginBtn', false);
+      // Ensure auth overlay stays visible
+      [dashboard, topbar, agentWrap].forEach(el => { if (el) el.style.visibility = 'hidden'; });
+      overlay.style.display = 'flex';
+      overlay.classList.remove('hide');
     }
-
-    // Inject user badge into topbar-right
-    const topbarRight = document.querySelector('.topbar-right');
-    if (topbarRight && !document.getElementById('userBadge')) {
-      const initials = (user.displayName || user.email || 'U')
-        .split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-
-      const badge = document.createElement('div');
-      badge.id = 'userBadge';
-      badge.innerHTML = `
-        <div id="userAvatar">
-          ${user.photoURL
-            ? `<img src="${user.photoURL}" alt="avatar" referrerpolicy="no-referrer" />`
-            : initials}
-        </div>
-        <span id="userDisplayName">${user.displayName || user.email}</span>
-        <button id="signOutBtn">Sign out</button>
-      `;
-      topbarRight.prepend(badge);
-      document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
-    }
-
-    // Show the app, hide overlay
-    [dashboard, topbar, agentWrap].forEach(el => {
-      if (el) el.style.visibility = 'visible';
-    });
-    overlay.classList.add('hide');
-    setTimeout(() => { overlay.style.display = 'none'; }, 380);
 
   } else {
     // ── Logged OUT ─────────────────────────────────────────
     window.__fs_currentUid = null;
     document.getElementById('userBadge')?.remove();
-    [dashboard, topbar, agentWrap].forEach(el => {
-      if (el) el.style.visibility = 'hidden';
-    });
+    [dashboard, topbar, agentWrap].forEach(el => { if (el) el.style.visibility = 'hidden'; });
+    // Reset auth forms to default state
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('signupForm').classList.add('hidden');
+    document.getElementById('verifyForm').classList.add('hidden');
+    document.querySelector('.auth-tabs').style.display = 'flex';
+    setAuthError('loginError', '');
+    setAuthError('signupError', '');
+    // Show overlay
     overlay.style.display = 'flex';
     overlay.classList.remove('hide');
   }
