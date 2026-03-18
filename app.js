@@ -46,6 +46,7 @@ const state = {
 
 // ── Persist helpers ────────────────────────────────────────
 function save() {
+  // Keep localStorage as offline/fast cache
   localStorage.setItem('fs_tasks',  JSON.stringify(state.tasks));
   localStorage.setItem('fs_goals',  JSON.stringify(state.goals));
   localStorage.setItem('fs_blocks', JSON.stringify(state.blocks));
@@ -57,6 +58,11 @@ function save() {
   localStorage.setItem('fs_mood',   state.mood);
   localStorage.setItem('fs_nextId', state.nextId);
   localStorage.setItem('fs_availability', JSON.stringify(state.availability));
+
+  // Also sync to Firestore if user is logged in
+  if (window.__fs_currentUid && window.fsSaveUserData) {
+    window.fsSaveUserData(window.__fs_currentUid, state);
+  }
 }
 
 // ── DOM refs ───────────────────────────────────────────────
@@ -1668,6 +1674,51 @@ function init() {
   updatePlannerApiStatus();
   scheduleMemorySync('init');
 }
+
+// ── Firestore Data Callback ────────────────────────────────
+// Called by firebase-auth.js once Firestore data is loaded for the user.
+// Merges cloud data into state so the dashboard reflects the user's real data.
+window.__fs_onDataLoaded = function(cloudData) {
+  if (!cloudData) return;
+
+  // Merge cloud fields into state (cloud wins over stale localStorage)
+  if (Array.isArray(cloudData.tasks))        state.tasks         = cloudData.tasks;
+  if (Array.isArray(cloudData.goals))        state.goals         = cloudData.goals;
+  if (Array.isArray(cloudData.blocks))       state.blocks        = cloudData.blocks;
+  if (cloudData.completionLog)               state.completionLog = cloudData.completionLog;
+  if (cloudData.monthChecks)                 state.monthChecks   = cloudData.monthChecks;
+  if (typeof cloudData.xp     === 'number')  state.xp            = cloudData.xp;
+  if (typeof cloudData.level  === 'number')  state.level         = cloudData.level;
+  if (typeof cloudData.streak === 'number')  state.streak        = cloudData.streak;
+  if (typeof cloudData.nextId === 'number')  state.nextId        = cloudData.nextId;
+  if (cloudData.mood)                        state.mood          = cloudData.mood;
+  if (cloudData.availability)                state.availability  = cloudData.availability;
+
+  // Also update localStorage cache so offline mode has fresh data
+  localStorage.setItem('fs_tasks',  JSON.stringify(state.tasks));
+  localStorage.setItem('fs_goals',  JSON.stringify(state.goals));
+  localStorage.setItem('fs_blocks', JSON.stringify(state.blocks));
+  localStorage.setItem('fs_completionLog', JSON.stringify(state.completionLog));
+  localStorage.setItem('fs_monthChecks', JSON.stringify(state.monthChecks));
+  localStorage.setItem('fs_xp',    state.xp);
+  localStorage.setItem('fs_level', state.level);
+  localStorage.setItem('fs_streak',state.streak);
+  localStorage.setItem('fs_mood',  state.mood);
+  localStorage.setItem('fs_nextId',state.nextId);
+  localStorage.setItem('fs_availability', JSON.stringify(state.availability));
+
+  // Re-render everything with the fresh data
+  syncDoneToday();
+  normalizeTaskDates();
+  renderTasks();
+  renderGoals();
+  renderMonthSheet();
+  renderBlocks();
+  renderXP();
+  setMood(state.mood);
+  checkStreak();
+  updateSessionStats();
+};
 
 document.addEventListener('DOMContentLoaded', init);
 
