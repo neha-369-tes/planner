@@ -34,6 +34,18 @@ const state = {
     weekend: { start: '10:00', end: '14:00' },
   },
 
+  // User schedule survey data
+  userSchedule: JSON.parse(localStorage.getItem('fs_userSchedule') || 'null') || {
+    profileCompleted: false,
+    userType: null, // 'student', 'office-worker', 'freelancer', 'other'
+    workingHours: { start: null, end: null }, // e.g., { start: '09:00', end: '17:00' }
+    breakHours: { start: null, end: null }, // lunch break
+    weekendAvailable: false,
+    weekendHours: { start: null, end: null },
+    commuteTime: 0, // minutes
+    workDaysPerWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], // customizable
+  },
+
   // timer
   timer: {
     running:   false,
@@ -58,6 +70,7 @@ function save() {
   localStorage.setItem('fs_mood',   state.mood);
   localStorage.setItem('fs_nextId', state.nextId);
   localStorage.setItem('fs_availability', JSON.stringify(state.availability));
+  localStorage.setItem('fs_userSchedule', JSON.stringify(state.userSchedule));
 
   // Also sync to Firestore if user is logged in
   if (window.__fs_currentUid && window.fsSaveUserData) {
@@ -345,11 +358,210 @@ function buildTaskCard(task) {
   return div;
 }
 
-function renderTasks() {
-  const list   = $('taskList');
-  const filter = state.filter;
-  list.innerHTML = '';
+// ── Schedule Survey System ─────────────────────────────────
+function buildSurveyForm() {
+  return `
+    <div class="survey-section">
+      <div class="survey-question">What's your current situation?</div>
+      <div class="survey-options">
+        <button class="survey-option-btn" data-value="student">👨‍🎓 Student</button>
+        <button class="survey-option-btn" data-value="office-worker">💼 Office Worker</button>
+        <button class="survey-option-btn" data-value="freelancer">🏠 Freelancer</button>
+        <button class="survey-option-btn" data-value="other">⭐ Other</button>
+      </div>
+    </div>
 
+    <div class="survey-section">
+      <div class="survey-question">When are you busy with work/school?</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">From (e.g., 09:00)</label>
+          <input type="time" class="survey-time-input" id="workStartTime" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">To (e.g., 17:00)</label>
+          <input type="time" class="survey-time-input" id="workEndTime" />
+        </div>
+      </div>
+    </div>
+
+    <div class="survey-section">
+      <div class="survey-question">When is your lunch/break time?</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">From (e.g., 12:00)</label>
+          <input type="time" class="survey-time-input" id="breakStartTime" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">To (e.g., 13:00)</label>
+          <input type="time" class="survey-time-input" id="breakEndTime" />
+        </div>
+      </div>
+    </div>
+
+    <div class="survey-section">
+      <div class="survey-question">Are you available on weekends?</div>
+      <div class="survey-options">
+        <button class="survey-option-btn" data-value="yes">✅ Yes</button>
+        <button class="survey-option-btn" data-value="no">❌ No</button>
+      </div>
+    </div>
+
+    <div class="survey-section" id="weekendHoursSection" style="display: none;">
+      <div class="survey-question">Your weekend availability time</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">From (e.g., 10:00)</label>
+          <input type="time" class="survey-time-input" id="weekendStartTime" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">To (e.g., 14:00)</label>
+          <input type="time" class="survey-time-input" id="weekendEndTime" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showScheduleSurvey() {
+  const overlay = $('surveyModalOverlay');
+  const body = $('surveyModalBody');
+  
+  if (!overlay || !body) return;
+
+  body.innerHTML = buildSurveyForm();
+  overlay.classList.add('open');
+
+  // Attach event listeners
+  $$('.survey-option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const container = btn.parentElement;
+      $$('.survey-option-btn', container).forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      // Show/hide weekend hours based on availability
+      if (btn.dataset.value === 'yes') {
+        $('weekendHoursSection').style.display = 'block';
+      } else if (btn.dataset.value === 'no') {
+        $('weekendHoursSection').style.display = 'none';
+      }
+    });
+  });
+
+  $('saveSurveyBtn').onclick = () => saveSurveyData();
+}
+
+function saveSurveyData() {
+  const userType = document.querySelector('.survey-option-btn[data-value].selected')?.dataset.value;
+  const workStartTime = $('workStartTime')?.value;
+  const workEndTime = $('workEndTime')?.value;
+  const breakStartTime = $('breakStartTime')?.value;
+  const breakEndTime = $('breakEndTime')?.value;
+  const weekendAvailable = document.querySelector('[data-value="yes"].selected') || document.querySelector('[data-value="no"].selected');
+  const isWeekendAvailable = weekendAvailable?.dataset.value === 'yes';
+  const weekendStartTime = $('weekendStartTime')?.value;
+  const weekendEndTime = $('weekendEndTime')?.value;
+
+  if (!userType || !workStartTime || !workEndTime) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  state.userSchedule = {
+    profileCompleted: true,
+    userType,
+    workingHours: { start: workStartTime, end: workEndTime },
+    breakHours: { start: breakStartTime || null, end: breakEndTime || null },
+    weekendAvailable: isWeekendAvailable,
+    weekendHours: isWeekendAvailable ? { start: weekendStartTime, end: weekendEndTime } : { start: null, end: null },
+    commuteTime: 0,
+    workDaysPerWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  };
+
+  save();
+  $('surveyModalOverlay').classList.remove('open');
+  renderTasks();
+  showFloatingMsg('✅ Schedule saved! Tasks will be organized automatically.');
+}
+
+function categorizeTask(task) {
+  const dayOfWeek = new Date().toLocaleString('en-US', { weekday: 'long' });
+  const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
+
+  if (!state.userSchedule.profileCompleted) {
+    return 'todo';
+  }
+
+  // Task categorization logic
+  if (isWeekend) {
+    if (state.userSchedule.weekendAvailable && task.tag === 'work') {
+      return 'weekendTasks';
+    } else if (task.tag === 'personal' || task.tag === 'health') {
+      return 'personalWorks';
+    }
+  }
+
+  if (task.tag === 'work' || task.tag === 'interview') {
+    return 'weeklyTasks';
+  }
+
+  if (task.tag === 'personal' || task.tag === 'health') {
+    return 'personalWorks';
+  }
+
+  if (task.priority === 'high' && task.status === 'todo') {
+    return 'weeklyTasks';
+  }
+
+  return 'todoTasks';
+}
+
+function renderTasksByCategory() {
+  const weeklyList = $('weeklyTasksList');
+  const weekendList = $('weekendTasksList');
+  const personalList = $('personalWorksList');
+  const todoList = $('todoTasksList');
+
+  if (!weeklyList || !weekendList || !personalList || !todoList) return;
+
+  // Clear all lists
+  weeklyList.innerHTML = '';
+  weekendList.innerHTML = '';
+  personalList.innerHTML = '';
+  todoList.innerHTML = '';
+
+  // Categorize and add tasks
+  state.tasks.forEach(task => {
+    if (task.status === 'done') return;
+
+    const category = categorizeTask(task);
+    let list;
+
+    switch (category) {
+      case 'weeklyTasks':
+        list = weeklyList;
+        break;
+      case 'weekendTasks':
+        list = weekendList;
+        break;
+      case 'personalWorks':
+        list = personalList;
+        break;
+      case 'todoTasks':
+      default:
+        list = todoList;
+        break;
+    }
+
+    const card = buildTaskCard(task);
+    list.appendChild(card);
+  });
+}
+
+function renderTasks() {
+  const filter = state.filter;
+  
+  // Filter check
   const visible = state.tasks.filter(t => {
     if (filter === 'todo')   return t.status === 'todo';
     if (filter === 'active') return t.status === 'active';
@@ -359,7 +571,13 @@ function renderTasks() {
 
   $('emptyState').style.display = visible.length === 0 ? 'block' : 'none';
 
-  visible.forEach(task => list.appendChild(buildTaskCard(task)));
+  // Show survey if not completed
+  if (!state.userSchedule.profileCompleted) {
+    showScheduleSurvey();
+  }
+
+  // Render tasks by category
+  renderTasksByCategory();
 
   // Progress label
   const total = state.tasks.length;

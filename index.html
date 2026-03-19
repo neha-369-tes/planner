@@ -130,54 +130,31 @@
 
       <p class="task-progress-label" id="taskProgressLabel">0 of 1 tasks complete</p>
 
-      <!-- Task List -->
-      <div class="task-list" id="taskList">
-
-        <!-- Carry-over task (from previous day) -->
-        <div class="task-card carry-over" data-status="todo" data-id="0">
-          <div class="task-check-col">
-            <button class="task-checkbox" data-id="0"></button>
-          </div>
-          <div class="task-body">
-            <div class="task-top-row">
-              <span class="task-name">Review project brief</span>
-              <div class="task-actions">
-                <button class="task-focus-btn" title="Focus on this task" data-id="0">🎯</button>
-                <button class="task-delete-btn" title="Delete" data-id="0">✕</button>
-              </div>
-            </div>
-            <div class="task-meta">
-              <span class="tag-pill tag-work">Work</span>
-              <span class="duration-dot">⏱ 45m</span>
-              <span class="priority-badge priority-medium">Medium</span>
-              <span class="carryover-label">carry-over</span>
-            </div>
-            <p class="task-note"><em>From yesterday — don't forget this one</em></p>
-          </div>
+      <!-- Task Columns Layout -->
+      <div class="task-columns-container" id="taskColumnsContainer">
+        <!-- Weekly Tasks Column -->
+        <div class="task-column">
+          <h3 class="column-title">📅 Weekly Tasks</h3>
+          <div class="task-column-list" id="weeklyTasksList"></div>
         </div>
 
-        <!-- Normal task -->
-        <div class="task-card" data-status="todo" data-id="1">
-          <div class="task-check-col">
-            <button class="task-checkbox" data-id="1"></button>
-          </div>
-          <div class="task-body">
-            <div class="task-top-row">
-              <span class="task-name">leetcode</span>
-              <div class="task-actions">
-                <button class="task-focus-btn" title="Focus on this task" data-id="1">🎯</button>
-                <button class="task-delete-btn" title="Delete" data-id="1">✕</button>
-              </div>
-            </div>
-            <div class="task-meta">
-              <span class="tag-pill tag-interview">Interview</span>
-              <span class="duration-dot">⏱ 30m</span>
-              <span class="priority-badge priority-high">High</span>
-            </div>
-            <p class="task-note"><em>focus on why, how and where</em></p>
-          </div>
+        <!-- Weekend Tasks Column -->
+        <div class="task-column">
+          <h3 class="column-title">🎉 Weekend Tasks</h3>
+          <div class="task-column-list" id="weekendTasksList"></div>
         </div>
 
+        <!-- Personal Works Column -->
+        <div class="task-column">
+          <h3 class="column-title">💼 Personal Works</h3>
+          <div class="task-column-list" id="personalWorksList"></div>
+        </div>
+
+        <!-- To Do Tasks Column -->
+        <div class="task-column">
+          <h3 class="column-title">✅ To Do</h3>
+          <div class="task-column-list" id="todoTasksList"></div>
+        </div>
       </div>
 
       <!-- Empty state -->
@@ -370,6 +347,22 @@
       <div class="modal-footer">
         <button class="btn-cancel" id="goalsCancelBtn">Cancel</button>
         <button class="btn-create" id="saveGoalsBtn">Save Goals</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Survey Modal -->
+  <div class="modal-overlay" id="surveyModalOverlay">
+    <div class="modal survey-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">📅 Your Schedule Setup</h2>
+        <p class="modal-subtitle">Tell us about your daily routine so we can smartly schedule your tasks</p>
+      </div>
+      <div class="modal-body" id="surveyModalBody">
+        <!-- Survey form rendered here -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-create" id="saveSurveyBtn">Create My Schedule</button>
       </div>
     </div>
   </div>

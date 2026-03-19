@@ -827,6 +827,70 @@ input, select { outline: none; }
   line-height: 1.4;
 }
 
+/* Task Columns Layout */
+.task-columns-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.task-column {
+  background: rgba(30, 40, 66, 0.35);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.column-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(248,245,245,0.1);
+}
+
+.task-column-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+/* Smaller task card variant for columns */
+.task-column-list .task-card {
+  padding: 10px 12px;
+  min-height: auto;
+  font-size: 0.9rem;
+}
+
+.task-column-list .task-name {
+  font-size: 0.9rem;
+}
+
+.task-column-list .task-meta {
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+}
+
+/* Empty column state */
+.task-column-list:empty::after {
+  content: 'No tasks';
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 12px;
+  text-align: center;
+  margin: auto 0;
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;
@@ -1557,6 +1621,87 @@ input, select { outline: none; }
   transition: border-color var(--transition);
 }
 .goal-edit-pct-input:focus { border-color: var(--border-mint); }
+
+/* Survey Modal */
+.survey-modal {
+  max-width: 600px;
+}
+
+.survey-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.survey-section {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(248,245,245,0.05);
+}
+
+.survey-section:last-child {
+  border-bottom: none;
+}
+
+.survey-question {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-bright);
+  margin-bottom: 10px;
+}
+
+.survey-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.survey-option-btn {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(30, 40, 66, 0.3);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.survey-option-btn:hover {
+  border-color: var(--mint);
+  background: rgba(0, 255, 178, 0.08);
+  color: var(--mint);
+}
+
+.survey-option-btn.selected {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: var(--bg);
+  font-weight: 500;
+}
+
+.survey-time-input {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(22, 28, 44, 0.6);
+  color: var(--text-primary);
+  transition: border-color var(--transition);
+}
+
+.survey-time-input:focus {
+  outline: none;
+  border-color: var(--mint);
+}
 
 /* ============================================================
    ANIMATIONS & MICRO-INTERACTIONS

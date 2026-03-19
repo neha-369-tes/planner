@@ -17,6 +17,14 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
+// Serve static files from current directory
+app.use(express.static(path.join(__dirname)));
+
+// Serve index.html for root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 const PRIORITY_WEIGHT = { high: 3, medium: 2, low: 1 };
 const MEMORY_DB_PATH = process.env.MEMORY_DB_PATH || path.join(__dirname, 'data', 'planner-memory.json');
 const MAX_MEMORY_EVENTS = Number(process.env.MAX_MEMORY_EVENTS || 2000);
