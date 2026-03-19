@@ -270,14 +270,17 @@ function bindAuthEvents() {
     
     // Strict validation - password cannot be empty or whitespace-only
     if (!email) { setAuthError('loginError', 'Enter your email address.'); return; }
+    if (!email.includes('@')) { setAuthError('loginError', 'Please enter a valid email address.'); return; }
     if (!pass || pass.length === 0) { setAuthError('loginError', 'Enter your password.'); return; }
     if (pass.length < 6) { setAuthError('loginError', 'Password must be at least 6 characters.'); return; }
     
     setLoading('loginBtn', true);
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      const result = await signInWithEmailAndPassword(auth, email, pass);
+      console.log('[FlowState] Login successful:', result.user.email);
       // onAuthStateChanged will handle routing verified/unverified users
     } catch (e) {
+      console.error('[FlowState] Login error:', e.code, e.message);
       setAuthError('loginError', friendlyFirebaseError(e.code));
       setLoading('loginBtn', false);
     }
@@ -363,17 +366,19 @@ function bindAuthEvents() {
 
 function friendlyFirebaseError(code) {
   const map = {
-    'auth/user-not-found':       'No account found with this email.',
-    'auth/wrong-password':       'Incorrect password.',
+    'auth/user-not-found':       'No account found with this email. Please sign up first.',
+    'auth/wrong-password':       'Incorrect password. Please check and try again.',
     'auth/invalid-credential':   'Incorrect email or password.',
+    'auth/invalid-login-credentials': 'Incorrect email or password.',
     'auth/email-already-in-use': 'An account with this email already exists.',
     'auth/weak-password':        'Password must be at least 6 characters.',
     'auth/invalid-email':        'Please enter a valid email address.',
-    'auth/too-many-requests':    'Too many attempts. Try again later.',
+    'auth/too-many-requests':    'Too many login attempts. Try again in a few minutes.',
     'auth/popup-closed-by-user': 'Sign-in popup was closed.',
     'auth/network-request-failed':'Network error — check your connection.',
+    'auth/operation-not-allowed': 'Email sign-in is not enabled. Use Google sign-in instead.',
   };
-  return map[code] || 'Something went wrong. Please try again.';
+  return map[code] || 'Login failed: ' + (code || 'Unknown error');
 }
 
 
@@ -444,8 +449,11 @@ window.fsCreateUserProfile = async function(user) {
 // ============================================================
 buildAuthOverlay();
 
+// Flag to track if we should sign out on page load
+let shouldEnforceLogout = false;
+
 // Hide main app until auth resolves
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const dashboard = document.querySelector('.dashboard-grid');
   const topbar    = document.querySelector('.topbar');
   const agentWrap = document.querySelector('.agent-bottom-wrap');
@@ -453,15 +461,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.style.visibility = 'hidden';
   });
   
-  // Sign out on page load to require fresh login each time
-  signOut(auth).catch(e => console.warn('[FlowState] Sign out error:', e.message));
+  // Set flag and clear browser cache
+  shouldEnforceLogout = true;
+  
+  // Clear Firebase persistence completely
+  try {
+    // Sign out and wait for completion
+    await signOut(auth);
+    console.log('[FlowState] Signed out on page load');
+  } catch (e) {
+    console.warn('[FlowState] Sign out error:', e.message);
+  }
+  
+  // Also clear IndexedDB cache used by Firebase
+  try {
+    const dbs = await indexedDB.databases();
+    for (const db of dbs) {
+      if (db.name.includes('firebase')) {
+        indexedDB.deleteDatabase(db.name);
+      }
+    }
+  } catch (e) {
+    console.warn('[FlowState] IndexedDB clear error:', e.message);
+  }
 });
+
+let authListenerInitialized = false;
 
 onAuthStateChanged(auth, async (user) => {
   const overlay   = document.getElementById('authOverlay');
   const dashboard = document.querySelector('.dashboard-grid');
   const topbar    = document.querySelector('.topbar');
   const agentWrap = document.querySelector('.agent-bottom-wrap');
+
+  // If we're enforcing logout and user exists, ignore this state change
+  if (shouldEnforceLogout && user && !authListenerInitialized) {
+    console.log('[FlowState] Ignoring auto-login due to logout enforcement');
+    return;
+  }
+  
+  authListenerInitialized = true;
 
   if (user) {
     // --- USER IS SIGNED IN ---

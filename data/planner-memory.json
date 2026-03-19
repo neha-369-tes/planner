@@ -14339,6 +14339,106 @@
       "tag": "learning",
       "priority": "medium",
       "createdAt": "2026-03-19T10:49:02.164Z"
+    },
+    {
+      "id": "1773917725725-fn6ykrl",
+      "source": "planner-ui",
+      "type": "profile",
+      "content": "User mood=Tired; streak=1; level=1; sessions=0; reason=init",
+      "mood": "Tired",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T10:55:25.725Z"
+    },
+    {
+      "id": "1773917725725-mg61zae",
+      "source": "planner-ui",
+      "type": "goals",
+      "content": "Goals: Land First Job=0%; Learn New Skill=100%; Build Portfolio=0%",
+      "mood": "",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T10:55:25.725Z"
+    },
+    {
+      "id": "1773917725725-60ptjvs",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: leetcode; priority=high; duration=30m; note=focus on why, how and where",
+      "mood": "",
+      "tag": "interview",
+      "priority": "high",
+      "createdAt": "2026-03-19T10:55:25.725Z"
+    },
+    {
+      "id": "1773917725725-oisqtz8",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: workout to personal works it should 45 min everyday; priority=medium; duration=45m; note=Added from chat | deadline: today",
+      "mood": "",
+      "tag": "health",
+      "priority": "medium",
+      "createdAt": "2026-03-19T10:55:25.725Z"
+    },
+    {
+      "id": "1773917725725-5lk95o6",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: ml couse; priority=medium; duration=30m; note=none",
+      "mood": "",
+      "tag": "learning",
+      "priority": "medium",
+      "createdAt": "2026-03-19T10:55:25.725Z"
+    },
+    {
+      "id": "1773917755316-hyn87mm",
+      "source": "planner-ui",
+      "type": "profile",
+      "content": "User mood=Tired; streak=1; level=1; sessions=0; reason=mood-change",
+      "mood": "Tired",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T10:55:55.316Z"
+    },
+    {
+      "id": "1773917755316-milev35",
+      "source": "planner-ui",
+      "type": "goals",
+      "content": "Goals: Land First Job=0%; Learn New Skill=100%; Build Portfolio=0%",
+      "mood": "",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T10:55:55.316Z"
+    },
+    {
+      "id": "1773917755316-9btx0m8",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: leetcode; priority=high; duration=30m; note=focus on why, how and where",
+      "mood": "",
+      "tag": "interview",
+      "priority": "high",
+      "createdAt": "2026-03-19T10:55:55.316Z"
+    },
+    {
+      "id": "1773917755316-eugxyke",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: workout to personal works it should 45 min everyday; priority=medium; duration=45m; note=Added from chat | deadline: today",
+      "mood": "",
+      "tag": "health",
+      "priority": "medium",
+      "createdAt": "2026-03-19T10:55:55.316Z"
+    },
+    {
+      "id": "1773917755316-q2e7lc8",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: ml couse; priority=medium; duration=30m; note=none",
+      "mood": "",
+      "tag": "learning",
+      "priority": "medium",
+      "createdAt": "2026-03-19T10:55:55.316Z"
     }
   ]
 }
