@@ -97,6 +97,8 @@ function buildAuthOverlay() {
       <!-- VERIFY -->
       <div class="auth-form hidden" id="verifyForm">
         <p class="auth-sub" style="margin:0; text-align:center;"></p>
+        <button class="auth-btn-primary" id="resendVerificationBtn" style="margin-top: 20px;">Resend Verification Email</button>
+        <button class="auth-btn-secondary" id="signOutVerifyBtn" style="margin-top: 10px; background: var(--dim-text); color: var(--text);">Back to Sign In</button>
       </div>
 
     </div>
@@ -182,6 +184,15 @@ function injectAuthStyles() {
       border-radius:100px;padding:9px 0;cursor:pointer;transition:all .18s ease;
     }
     .auth-btn-google:hover { background:rgba(255,255,255,0.11);border-color:rgba(255,255,255,0.28); }
+
+    .auth-btn-secondary {
+      font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;
+      color:#E0E4F8;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);
+      border-radius:100px;padding:11px 0;cursor:pointer;transition:all .18s;
+      font-weight:600;width:100%;
+    }
+    .auth-btn-secondary:hover { background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.28); }
+    .auth-btn-secondary:disabled { opacity:.45;cursor:not-allowed; }
 
     .auth-error {
       font-size:.72rem;color:#FF6B6B;min-height:18px;
@@ -321,6 +332,26 @@ function bindAuthEvents() {
     document.getElementById(id)?.addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('signupBtn').click();
     });
+  });
+
+  // RESEND VERIFICATION EMAIL
+  document.getElementById('resendVerificationBtn')?.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (user && !user.emailVerified) {
+      setLoading('resendVerificationBtn', true);
+      try {
+        await sendEmailVerification(user);
+        alert('✓ Verification email resent to ' + user.email + '\n\nCheck your inbox and spam folder.');
+      } catch (e) {
+        alert('Error resending email: ' + (e.message || 'Network error'));
+      }
+      setLoading('resendVerificationBtn', false);
+    }
+  });
+
+  // SIGN OUT FROM VERIFY SCREEN
+  document.getElementById('signOutVerifyBtn')?.addEventListener('click', async () => {
+    await signOut(auth);
   });
 }
 
