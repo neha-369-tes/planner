@@ -401,6 +401,7 @@ window.fsSaveUserData = function(uid, stateSnapshot) {
         xpMax:          stateSnapshot.xpMax,
         level:          stateSnapshot.level,
         streak:         stateSnapshot.streak,
+        lastStreakDate: stateSnapshot.lastStreakDate || null,
         mood:           stateSnapshot.mood,
         nextId:         stateSnapshot.nextId,
         availability:   stateSnapshot.availability,

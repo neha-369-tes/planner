@@ -17,7 +17,8 @@ const state = {
   xp:        parseInt(localStorage.getItem('fs_xp')   || '40'),
   xpMax:     200,
   level:     parseInt(localStorage.getItem('fs_level')|| '1'),
-  streak:    parseInt(localStorage.getItem('fs_streak')|| '1'),
+  streak:    parseInt(localStorage.getItem('fs_streak')|| '0'),
+  lastStreakDate: localStorage.getItem('fs_lastStreakDate') || null,
   mood:      localStorage.getItem('fs_mood') || 'Tired',
   sessions:  0,
   focusedSec:0,
@@ -63,6 +64,7 @@ function save() {
   localStorage.setItem('fs_xp',     state.xp);
   localStorage.setItem('fs_level',  state.level);
   localStorage.setItem('fs_streak', state.streak);
+  localStorage.setItem('fs_lastStreakDate', state.lastStreakDate || '');
   localStorage.setItem('fs_mood',   state.mood);
   localStorage.setItem('fs_nextId', state.nextId);
   localStorage.setItem('fs_availability', JSON.stringify(state.availability));
@@ -106,6 +108,7 @@ function adjustCompletionForDate(dateKey, delta) {
   }
   if (delta > 0) state.monthChecks[dateKey] = true;
   syncDoneToday();
+  updateStreak(); // Update streak whenever completion changes
 }
 
 function getDayTaskStats(dateKey) {
@@ -147,6 +150,50 @@ function normalizeGoals() {
 function adjustTodayCompletion(delta) {
   const key = getDateKey();
   adjustCompletionForDate(key, delta);
+}
+
+// ============================================================
+//  STREAK TRACKING
+// ============================================================
+function updateStreak() {
+  const today = getDateKey();
+  const hasCompletedToday = state.completionLog[today] > 0;
+  
+  // Check if last tracked date was yesterday
+  const yesterday = getDateKey(new Date(new Date().setDate(new Date().getDate() - 1)));
+  const lastTracked = state.lastStreakDate;
+  
+  // If this is the first time or last tracked was today, streak is maintained
+  if (lastTracked === today) {
+    return; // Already updated today
+  }
+  
+  // If no tasks completed today and it's a new day, reset streak
+  if (!hasCompletedToday && lastTracked !== today) {
+    if (lastTracked !== yesterday) {
+      // More than a day has passed, reset
+      state.streak = 0;
+    }
+    return;
+  }
+  
+  // If tasks completed today
+  if (hasCompletedToday) {
+    if (!lastTracked) {
+      // First day
+      state.streak = 1;
+    } else if (lastTracked === yesterday) {
+      // Yesterday had completion, increment
+      state.streak++;
+    } else if (lastTracked === today) {
+      // Already counted today
+      return;
+    } else {
+      // Gap in days, restart at 1
+      state.streak = 1;
+    }
+    state.lastStreakDate = today;
+  }
 }
 
 // ============================================================
@@ -1904,19 +1951,38 @@ document.head.appendChild(toastStyle);
 //  STREAK
 // ============================================================
 function checkStreak() {
-  const lastVisit = localStorage.getItem('fs_lastVisit');
-  const today     = new Date().toDateString();
-  if (lastVisit !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    if (lastVisit === yesterday) {
+  // Calculate streak based on completion log (not just visits)
+  const today = getDateKey();
+  const hasCompletedToday = state.completionLog[today] > 0;
+  
+  // For initial load, check if today has completions
+  // and update the streak accordingly
+  if (hasCompletedToday && state.lastStreakDate !== today) {
+    const yesterday = getDateKey(new Date(new Date().setDate(new Date().getDate() - 1)));
+    const lastTracked = state.lastStreakDate;
+    
+    if (!lastTracked) {
+      state.streak = 1;
+    } else if (lastTracked === yesterday) {
       state.streak++;
-    } else if (lastVisit && lastVisit !== today) {
+    } else {
       state.streak = 1; // broke streak
     }
-    localStorage.setItem('fs_lastVisit', today);
+    state.lastStreakDate = today;
     save();
+  } else if (!hasCompletedToday && state.lastStreakDate !== null) {
+    // Last date was set but no completion today
+    const yesterday = getDateKey(new Date(new Date().setDate(new Date().getDate() - 1)));
+    if (state.lastStreakDate && state.lastStreakDate !== yesterday && state.lastStreakDate !== today) {
+      state.streak = 0; // broke streak (gap of more than 1 day)
+      save();
+    }
   }
-  document.querySelector('.streak-count').textContent = state.streak;
+  
+  const streakEl = document.querySelector('.streak-count');
+  if (streakEl) {
+    streakEl.textContent = state.streak;
+  }
 }
 
 // ============================================================
@@ -1985,6 +2051,7 @@ window.__fs_onDataLoaded = function(cloudData) {
   if (typeof cloudData.xp     === 'number')  state.xp            = cloudData.xp;
   if (typeof cloudData.level  === 'number')  state.level         = cloudData.level;
   if (typeof cloudData.streak === 'number')  state.streak        = cloudData.streak;
+  if (cloudData.lastStreakDate)              state.lastStreakDate= cloudData.lastStreakDate;
   if (typeof cloudData.nextId === 'number')  state.nextId        = cloudData.nextId;
   if (cloudData.mood)                        state.mood          = cloudData.mood;
   if (cloudData.availability)                state.availability  = cloudData.availability;
@@ -1999,6 +2066,7 @@ window.__fs_onDataLoaded = function(cloudData) {
   localStorage.setItem('fs_xp',    state.xp);
   localStorage.setItem('fs_level', state.level);
   localStorage.setItem('fs_streak',state.streak);
+  localStorage.setItem('fs_lastStreakDate', state.lastStreakDate || '');
   localStorage.setItem('fs_mood',  state.mood);
   localStorage.setItem('fs_nextId',state.nextId);
   localStorage.setItem('fs_availability', JSON.stringify(state.availability));
