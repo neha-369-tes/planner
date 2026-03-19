@@ -103,7 +103,8 @@ function buildAuthOverlay() {
       <!-- VERIFY -->
       <div class="auth-form hidden" id="verifyForm">
         <p class="auth-sub" style="margin:0; text-align:center;"></p>
-        <button class="auth-btn-primary" id="resendVerificationBtn" style="margin-top: 20px;">Resend Verification Email</button>
+        <button class="auth-btn-primary" id="checkVerificationBtn" style="margin-top: 20px;">✓ I've Verified My Email</button>
+        <button class="auth-btn-primary" id="resendVerificationBtn" style="margin-top: 10px;">↻ Resend Verification Email</button>
         <button class="auth-btn-secondary" id="signOutVerifyBtn" style="margin-top: 10px; background: var(--dim-text); color: var(--text);">Back to Sign In</button>
       </div>
 
@@ -343,6 +344,32 @@ function bindAuthEvents() {
     });
   });
 
+  // CHECK EMAIL VERIFICATION STATUS
+  document.getElementById('checkVerificationBtn')?.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Please sign up first.');
+      return;
+    }
+    
+    setLoading('checkVerificationBtn', true);
+    try {
+      // Force refresh user claims to check latest verification status
+      await user.reload();
+      
+      if (user.emailVerified) {
+        alert('✓ Email verified successfully!\n\nRedirecting to your account...');
+        // Page reload will trigger onAuthStateChanged again with updated status
+        location.reload();
+      } else {
+        alert('✗ Email not verified yet.\n\nPlease click the link in the verification email and try again.');
+      }
+    } catch (e) {
+      alert('Error checking verification: ' + (e.message || 'Please try again'));
+    }
+    setLoading('checkVerificationBtn', false);
+  });
+
   // RESEND VERIFICATION EMAIL
   document.getElementById('resendVerificationBtn')?.addEventListener('click', async () => {
     const user = auth.currentUser;
@@ -449,9 +476,6 @@ window.fsCreateUserProfile = async function(user) {
 // ============================================================
 buildAuthOverlay();
 
-// Flag to track if we should sign out on page load
-let shouldEnforceLogout = false;
-
 // Hide main app until auth resolves
 document.addEventListener('DOMContentLoaded', async () => {
   const dashboard = document.querySelector('.dashboard-grid');
@@ -461,29 +485,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (el) el.style.visibility = 'hidden';
   });
   
-  // Set flag and clear browser cache
-  shouldEnforceLogout = true;
-  
-  // Clear Firebase persistence completely
-  try {
-    // Sign out and wait for completion
-    await signOut(auth);
-    console.log('[FlowState] Signed out on page load');
-  } catch (e) {
-    console.warn('[FlowState] Sign out error:', e.message);
-  }
-  
-  // Also clear IndexedDB cache used by Firebase
-  try {
-    const dbs = await indexedDB.databases();
-    for (const db of dbs) {
-      if (db.name.includes('firebase')) {
-        indexedDB.deleteDatabase(db.name);
-      }
-    }
-  } catch (e) {
-    console.warn('[FlowState] IndexedDB clear error:', e.message);
-  }
+  // Don't sign out - let auth state listener handle it
+  // This allows users to see if they're logged in or not
+  console.log('[FlowState] Auth page loaded');
 });
 
 let authListenerInitialized = false;
@@ -494,12 +498,6 @@ onAuthStateChanged(auth, async (user) => {
   const topbar    = document.querySelector('.topbar');
   const agentWrap = document.querySelector('.agent-bottom-wrap');
 
-  // If we're enforcing logout and user exists, ignore this state change
-  if (shouldEnforceLogout && user && !authListenerInitialized) {
-    console.log('[FlowState] Ignoring auto-login due to logout enforcement');
-    return;
-  }
-  
   authListenerInitialized = true;
 
   if (user) {
