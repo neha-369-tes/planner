@@ -26,7 +26,8 @@ import { getAuth, onAuthStateChanged,
          createUserWithEmailAndPassword,
          signInWithEmailAndPassword,
          signInWithPopup, GoogleAuthProvider,
-         signOut, updateProfile, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+         signOut, updateProfile, sendEmailVerification,
+         setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc,
          updateDoc, serverTimestamp }             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -35,6 +36,11 @@ const app      = initializeApp(FIREBASE_CONFIG);
 const auth     = getAuth(app);
 const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
+
+// Set auth persistence to SESSION only (clears on browser close)
+// This prevents auto-login on page reload
+setPersistence(auth, browserSessionPersistence)
+  .catch(e => console.warn('[FlowState] Persistence error:', e.message));
 
 // Expose globally so app.js can call them
 window.__fs_auth = auth;
@@ -446,6 +452,9 @@ document.addEventListener('DOMContentLoaded', () => {
   [dashboard, topbar, agentWrap].forEach(el => {
     if (el) el.style.visibility = 'hidden';
   });
+  
+  // Sign out on page load to require fresh login each time
+  signOut(auth).catch(e => console.warn('[FlowState] Sign out error:', e.message));
 });
 
 onAuthStateChanged(auth, async (user) => {
