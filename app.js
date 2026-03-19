@@ -1533,8 +1533,6 @@ async function runDocumentAgentPlan() {
 
     const summary = payload.summary || 'Agent plan ready.';
     const firstQuestion = payload.checkinQuestions?.[0] || 'Can you follow this schedule?';
-    $('aiResponse').textContent = `${summary} ${firstQuestion}`;
-    $('aiResponse').classList.add('visible');
 
     const canFollow = window.confirm('Agent schedule is ready. Can you follow this plan today?');
     const checkinResponse = await fetch(`${AGENT_API_BASE}/api/checkin`, {
@@ -1549,7 +1547,7 @@ async function runDocumentAgentPlan() {
 
     if (checkinResponse.ok) {
       const checkin = await checkinResponse.json();
-      $('aiResponse').textContent = `${summary} ${checkin.message} ${checkin.nextQuestion}`;
+      // Schedule response message handled elsewhere
     }
 
     status.textContent = `Imported ${newTasks.length} tasks and built ${payload.slots?.length || 0} timeline blocks.${payload.mcpUsed ? ' MCP connected.' : ' Using local planner logic.'}`;
@@ -1752,37 +1750,6 @@ async function askPlannerAssistant() {
 $('plannerChatSendBtn')?.addEventListener('click', askPlannerAssistant);
 $('plannerChatInput')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') askPlannerAssistant();
-});
-
-$('schedulePrevDayBtn')?.addEventListener('click', () => {
-  state.scheduleDayOffset = Math.max(-3, (state.scheduleDayOffset || 0) - 1);
-  renderBlocks();
-  save();
-});
-
-$('scheduleTodayBtn')?.addEventListener('click', () => {
-  state.scheduleDayOffset = 0;
-  renderBlocks();
-  save();
-});
-
-$('scheduleNextDayBtn')?.addEventListener('click', () => {
-  state.scheduleDayOffset = Math.min(14, (state.scheduleDayOffset || 0) + 1);
-  renderBlocks();
-  save();
-});
-
-$('aiChip').addEventListener('click', () => {
-  const pending = state.tasks.filter(t => t.status === 'todo');
-  const top     = pending.find(t => t.priority === 'high') || pending[0];
-  const fn      = AI_SUGGESTIONS[Math.floor(Math.random() * AI_SUGGESTIONS.length)];
-  const msg     = fn(top);
-  const resp    = $('aiResponse');
-  resp.textContent = msg;
-  resp.classList.add('visible');
-  resp.style.animation = 'none';
-  void resp.offsetWidth;
-  resp.style.animation = '';
 });
 
 // ============================================================

@@ -100,9 +100,6 @@ input, select { outline: none; }
 .month-sheet-panel,
 .month-heatmap-shell,
 .goals-panel,
-.schedule-panel,
-.ai-chip,
-.ai-response,
 .time-block,
 .moti-quote,
 .session-stats,
@@ -280,29 +277,6 @@ input, select { outline: none; }
     radial-gradient(circle at 74% 68%, rgba(4, 10, 20, 0.42), transparent 48%);
   pointer-events: none;
   z-index: 0;
-}
-
-.agent-bottom-wrap {
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 12px 20px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
-  border-bottom: 1px solid rgba(248,245,245,0.1);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-}
-
-.agent-bottom-wrap .ai-panel {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-/* Add padding to main content to account for fixed chat bar */
-main.dashboard-grid {
-  margin-top: 110px;
 }
 
 .col-left,
@@ -1277,50 +1251,6 @@ main.dashboard-grid {
 }
 .edit-goals-btn:hover { color: var(--text-muted); border-color: var(--border-hover); }
 
-/* Schedule Slots */
-.schedule-panel {
-  margin-bottom: 24px;
-  padding: 10px;
-  overflow: hidden;
-}
-.schedule-day-nav {
-  display: flex;
-  gap: 8px;
-  margin: 8px 0 10px;
-}
-.schedule-day-btn {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  padding: 4px 10px;
-  background: rgba(255,255,255,0.02);
-  transition: all var(--transition);
-}
-.schedule-day-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--border-hover);
-}
-.schedule-day-btn.active {
-  color: var(--mint);
-  border-color: var(--border-mint);
-  background: var(--mint-dim);
-}
-.no-slots-msg {
-  font-size: 0.75rem;
-  color: #B1B9DB;
-  font-style: italic;
-  margin-bottom: 12px;
-  text-shadow: 0 0 8px rgba(248,247,242,0.14);
-}
-.schedule-slots { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-.schedule-hint {
-  margin: 4px 2px 0;
-  font-size: 0.72rem;
-  color: #9FA8CB;
-}
-
 .time-block {
   display: flex;
   align-items: center;
@@ -1362,60 +1292,6 @@ main.dashboard-grid {
   width: 100%;
 }
 .block-time-btn:hover { color: var(--mint); border-color: var(--border-mint); }
-
-/* AI Suggestion Chip */
-/* AI Suggestion Chip */
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(0,255,178,0.2), 0 0 0 1px rgba(0,255,178,0.25); }
-  50%       { box-shadow: 0 0 16px rgba(0,255,178,0.4), 0 0 0 1px rgba(0,255,178,0.45); }
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%       { opacity: 1;   transform: scale(1.35); }
-}
-
-.ai-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--border-mint);
-  border-radius: var(--radius-md);
-  background: var(--mint-glow);
-  animation: glow-pulse 2.8s ease-in-out infinite;
-  transition: background var(--transition);
-}
-.ai-chip:hover { background: var(--mint-dim); }
-
-.ai-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--mint);
-  animation: pulse-dot 2.8s ease-in-out infinite;
-  flex-shrink: 0;
-}
-.ai-text {
-  font-size: 0.78rem;
-  color: var(--mint);
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-shadow: 0 0 10px rgba(0,255,178,0.38);
-}
-.ai-response {
-  margin-top: 10px;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-style: italic;
-  line-height: 1.6;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-  display: none;
-}
-.ai-response.visible { display: block; }
 
 .planner-chat-shell {
   margin-bottom: 0;
@@ -1904,9 +1780,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
 
-/* Smooth opacity for ai response */
-.ai-response { transition: opacity 0.25s ease; }
-
 /* ============================================================
    RESPONSIVE — Keep it readable on narrower screens
    ============================================================ */
@@ -1915,9 +1788,6 @@ input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
     grid-template-columns: 1fr;
     height: auto;
     overflow: visible;
-  }
-  .agent-bottom-wrap {
-    padding: 12px 12px 20px;
   }
   .col-left  { border-right: none; border-bottom: 1px solid var(--border); }
   .col-right { border-left:  none; border-top:    1px solid var(--border); }
