@@ -917,6 +917,20 @@ function renderGoals() {
   const container = $('goalBars');
   container.innerHTML = '';
   
+  // Check if user has any goals at all
+  if (!state.goals || state.goals.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 20px 0;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">No long-term goals yet.</p>
+        <button id="addGoalQuickBtn" class="btn-create" style="font-size: 0.65rem; padding: 6px 12px;">+ Add Goal</button>
+      </div>
+    `;
+    $('addGoalQuickBtn')?.addEventListener('click', () => {
+      openAddGoalModal();
+    });
+    return;
+  }
+  
   // Only render active goals with end date set in current year (2026)
   const currentYear = new Date().getFullYear();
   const activeGoals = (state.goals || []).filter(g => {
@@ -963,9 +977,38 @@ function renderGoals() {
 }
 
 // Edit Goals Modal
+// ============================================================
+//  ADD/EDIT GOALS MODAL
+// ============================================================
+function openAddGoalModal() {
+  const goalName = prompt('What is your long-term goal?', '');
+  if (!goalName || !goalName.trim()) return;
+  
+  const goalIcon = prompt('Pick an emoji for your goal (e.g., 🎯, 📚, 💼, 🏆):', '🎯');
+  if (!goalIcon) return;
+  
+  // Create new goal
+  const newGoal = {
+    id: Math.random().toString(36).substr(2, 9),
+    icon: goalIcon.trim() || '🎯',
+    name: goalName.trim(),
+    pct: 0,
+    createdDate: new Date().toISOString().split('T')[0],
+    endDate: null,
+    active: true
+  };
+  
+  state.goals.push(newGoal);
+  renderGoals();
+  save();
+  showFloatingMsg('Goal created! Set an end date in "Edit Goals".');
+}
+
 $('editGoalsBtn').addEventListener('click', () => {
   const body = $('goalsModalBody');
   body.innerHTML = '';
+  
+  // Display existing goals
   state.goals.forEach((g, i) => {
     const endDateStr = g.endDate ? g.endDate : '';
     body.innerHTML += `
@@ -982,10 +1025,37 @@ $('editGoalsBtn').addEventListener('click', () => {
               <option value="1" ${g.active !== false ? 'selected' : ''}>Active</option>
               <option value="0" ${g.active === false ? 'selected' : ''}>Hidden</option>
             </select>
+            <button class="goal-delete-btn" data-index="${i}" style="width: 40px; padding: 4px; background: rgba(255,107,107,0.2); border: 1px solid rgba(255,107,107,0.4); border-radius: 4px; color: #FF6B6B; cursor: pointer; font-size: 0.7rem;">Delete</button>
           </div>
         </div>
       </div>`;
   });
+  
+  // Add button to add new goal
+  body.innerHTML += `
+    <div style="text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(240,237,230,0.1);">
+      <button id="addNewGoalBtn" class="btn-create" style="font-size: 0.7rem; padding: 6px 12px;">+ Add New Goal</button>
+    </div>
+  `;
+  
+  // Add delete functionality
+  $$('.goal-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.index);
+      if (confirm(`Delete goal "${state.goals[idx].name}"?`)) {
+        state.goals.splice(idx, 1);
+        // Re-open modal to refresh
+        $('editGoalsBtn').click();
+      }
+    });
+  });
+  
+  // Add new goal button
+  $('addNewGoalBtn').addEventListener('click', () => {
+    closeModal('goalsModalOverlay');
+    openAddGoalModal();
+  });
+  
   openModal('goalsModalOverlay');
 });
 $('goalsModalClose').addEventListener('click', () => closeModal('goalsModalOverlay'));
