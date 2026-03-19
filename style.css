@@ -283,12 +283,26 @@ input, select { outline: none; }
 }
 
 .agent-bottom-wrap {
-  padding: 16px 20px 28px;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px 20px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border-bottom: 1px solid rgba(248,245,245,0.1);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 
 .agent-bottom-wrap .ai-panel {
   max-width: 960px;
   margin: 0 auto;
+}
+
+/* Add padding to main content to account for fixed chat bar */
+main.dashboard-grid {
+  margin-top: 110px;
 }
 
 .col-left,
@@ -1262,27 +1276,30 @@ input, select { outline: none; }
 .ai-response.visible { display: block; }
 
 .planner-chat-shell {
-  margin-bottom: 10px;
+  margin-bottom: 0;
   border: 1px solid rgba(255,255,255,0.18);
   border-radius: var(--radius-md);
-  padding: 10px;
-  background: rgba(20, 26, 43, 0.32);
+  padding: 8px;
+  background: rgba(20, 26, 43, 0.6);
   font-family: 'DM Sans', sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  max-height: 90px;
+  overflow: hidden;
 }
 
 .planner-chat-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  gap: 8px;
 }
 
 .planner-chat-head h4 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #EAF0FF;
   letter-spacing: 0.01em;
@@ -1331,6 +1348,7 @@ input, select { outline: none; }
 }
 
 .planner-chat-log {
+  display: none;
   max-height: min(44vh, 420px);
   min-height: 190px;
   overflow-y: auto;
@@ -1386,6 +1404,7 @@ input, select { outline: none; }
 }
 
 .planner-import-status {
+  display: none;
   margin: 0 0 8px;
   font-size: 0.78rem;
   color: #B9C1E1;
