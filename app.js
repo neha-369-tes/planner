@@ -478,35 +478,36 @@ function saveSurveyData() {
     workDaysPerWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
   };
 
-  save();
+  localStorage.setItem('fs_userSchedule', JSON.stringify(state.userSchedule));
+  save(); // This syncs userSchedule to Firebase via fsSaveUserData
   $('surveyModalOverlay').classList.remove('open');
   renderTasks();
   showFloatingMsg('✅ Schedule saved! Tasks will be organized automatically.');
 }
 
 function categorizeTask(task) {
-  const dayOfWeek = new Date().toLocaleString('en-US', { weekday: 'long' });
-  const isWeekend = dayOfWeek === 'Saturday' || dayOfWeek === 'Sunday';
-
-  if (!state.userSchedule.profileCompleted) {
-    return 'todo';
+  if (!state.userSchedule || !state.userSchedule.profileCompleted) {
+    return 'todoTasks';
   }
 
-  // Task categorization logic
-  if (isWeekend) {
-    if (state.userSchedule.weekendAvailable && task.tag === 'work') {
-      return 'weekendTasks';
-    } else if (task.tag === 'personal' || task.tag === 'health') {
-      return 'personalWorks';
-    }
-  }
-
-  if (task.tag === 'work' || task.tag === 'interview') {
-    return 'weeklyTasks';
-  }
+  // Task categorization logic based on user schedule
+  const isWeekendAvailable = state.userSchedule.weekendAvailable === true;
 
   if (task.tag === 'personal' || task.tag === 'health') {
     return 'personalWorks';
+  }
+
+  if (task.tag === 'work' || task.tag === 'interview') {
+    // High priority work tasks go to Weekly Tasks
+    if (task.priority === 'high') {
+      return 'weeklyTasks';
+    }
+    // If user has weekend availability and moderate/low priority, can go to Weekend Tasks
+    if (isWeekendAvailable && task.priority !== 'high') {
+      return 'weekendTasks';
+    }
+    // Regular work/interview tasks go to Weekly Tasks
+    return 'weeklyTasks';
   }
 
   if (task.priority === 'high' && task.status === 'todo') {
@@ -778,11 +779,41 @@ $$('.filter-tab').forEach(tab => {
 // ── Add Task Modal ─────────────────────────────────────────
 function openModal(id) {
   const el = $(id);
-  if (el) el.classList.add('open');
+  if (el) {
+    el.classList.add('open');
+    if (id === 'modalOverlay') updateTaskCategoryPreview();
+  }
 }
 function closeModal(id) {
   const el = $(id);
   if (el) el.classList.remove('open');
+}
+
+function updateTaskCategoryPreview() {
+  const tag = $('taskTag')?.value || 'learning';
+  const priority = $('taskPriority')?.value || 'medium';
+  
+  const tempTask = { tag, priority, status: 'todo' };
+  const category = categorizeTask(tempTask);
+  
+  const categoryIcons = {
+    'weeklyTasks': '📅 Weekly Tasks',
+    'weekendTasks': '🎉 Weekend Tasks',
+    'personalWorks': '💼 Personal Works',
+    'todoTasks': '📋 To Do'
+  };
+  
+  const preview = $('taskCategoryPreview');
+  if (preview) {
+    preview.textContent = categoryIcons[category] || '📋 To Do';
+    preview.style.background = 'rgba(0, 255, 178, 0.15)';
+    preview.style.border = '1px solid rgba(0, 255, 178, 0.3)';
+    preview.style.borderRadius = 'var(--radius-sm)';
+    preview.style.padding = '6px 10px';
+    preview.style.fontSize = '0.75rem';
+    preview.style.fontWeight = '500';
+    preview.style.color = 'var(--mint)';
+  }
 }
 
 $('addTaskBtn').addEventListener('click',  () => openModal('modalOverlay'));
@@ -1684,6 +1715,7 @@ async function askPlannerAssistant() {
         message: text,
         dayStart: state.availability.weekday.start,
         dayEnd: state.availability.weekday.end,
+        userSchedule: state.userSchedule,
         pendingTasks: state.tasks
           .filter(t => t.status !== 'done')
           .map(t => ({ name: t.name, priority: t.priority, tag: t.tag, durationMin: parseTaskDurationMin(t.duration) })),
@@ -1878,6 +1910,7 @@ window.__fs_onDataLoaded = function(cloudData) {
   if (typeof cloudData.nextId === 'number')  state.nextId        = cloudData.nextId;
   if (cloudData.mood)                        state.mood          = cloudData.mood;
   if (cloudData.availability)                state.availability  = cloudData.availability;
+  if (cloudData.userSchedule)                state.userSchedule  = cloudData.userSchedule;
 
   // Also update localStorage cache so offline mode has fresh data
   localStorage.setItem('fs_tasks',  JSON.stringify(state.tasks));
@@ -1891,6 +1924,7 @@ window.__fs_onDataLoaded = function(cloudData) {
   localStorage.setItem('fs_mood',  state.mood);
   localStorage.setItem('fs_nextId',state.nextId);
   localStorage.setItem('fs_availability', JSON.stringify(state.availability));
+  localStorage.setItem('fs_userSchedule', JSON.stringify(state.userSchedule));
 
   // Re-render everything with the fresh data
   syncDoneToday();

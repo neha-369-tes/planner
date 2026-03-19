@@ -374,6 +374,7 @@ window.fsSaveUserData = function(uid, stateSnapshot) {
         nextId:         stateSnapshot.nextId,
         availability:   stateSnapshot.availability,
         scheduleDayOffset: stateSnapshot.scheduleDayOffset || 0,
+        userSchedule:   stateSnapshot.userSchedule || {},
         updatedAt:      serverTimestamp(),
       };
       await setDoc(doc(db, 'users', uid), payload, { merge: true });

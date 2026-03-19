@@ -1618,6 +1618,18 @@ input, select { outline: none; }
   transition: all var(--transition);
 }
 .btn-cancel:hover { color: var(--text-primary); border-color: var(--border-hover); }
+
+.category-badge {
+  background: rgba(0, 255, 178, 0.15);
+  border: 1px solid rgba(0, 255, 178, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--mint);
+  text-align: center;
+  transition: all var(--transition);
+}
 .btn-create {
   font-family: var(--font-body);
   font-size: 0.78rem;
