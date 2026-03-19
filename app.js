@@ -10,11 +10,7 @@ const state = {
     { id: 0, name: 'Review project brief', tag: 'work',      duration: '45m', priority: 'medium', note: 'From yesterday — don\'t forget this one', status: 'todo', carryOver: true,  time: null, createdDate: getDateKey(), completedDate: null },
     { id: 1, name: 'leetcode',             tag: 'interview', duration: '30m', priority: 'high',   note: 'focus on why, how and where',            status: 'todo', carryOver: false, time: null, createdDate: getDateKey(), completedDate: null },
   ],
-  goals: JSON.parse(localStorage.getItem('fs_goals') || 'null') || [
-    { id: 1, icon: '💼', name: 'Land First Job',   pct: 0,   createdDate: new Date().toISOString().split('T')[0], endDate: null, active: true },
-    { id: 2, icon: '📚', name: 'Learn New Skill',  pct: 100, createdDate: new Date().toISOString().split('T')[0], endDate: null, active: true },
-    { id: 3, icon: '🌐', name: 'Build Portfolio',  pct: 0,   createdDate: new Date().toISOString().split('T')[0], endDate: null, active: true },
-  ],
+  goals: JSON.parse(localStorage.getItem('fs_goals') || '[]'),
   blocks: JSON.parse(localStorage.getItem('fs_blocks') || '[]'),
   completionLog: JSON.parse(localStorage.getItem('fs_completionLog') || '{}'),
   monthChecks: JSON.parse(localStorage.getItem('fs_monthChecks') || '{}'),
@@ -780,7 +776,22 @@ $$('.filter-tab').forEach(tab => {
 // ── Add Task Modal ─────────────────────────────────────────
 function openModal(id) {
   const el = $(id);
-  if (el) el.classList.add('open');
+  if (el) {
+    el.classList.add('open');
+    // Populate goal dropdown if it's the task modal
+    if (id === 'modalOverlay') {
+      const goalSelect = $('taskGoal');
+      if (goalSelect) {
+        goalSelect.innerHTML = '<option value="">No Goal</option>';
+        state.goals.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.name;
+          opt.textContent = g.name;
+          goalSelect.appendChild(opt);
+        });
+      }
+    }
+  }
 }
 function closeModal(id) {
   const el = $(id);
@@ -797,6 +808,27 @@ $('createTaskBtn').addEventListener('click', () => {
   if (!name) { $('taskNameInput').focus(); $('taskNameInput').style.borderColor = 'var(--red)'; return; }
   $('taskNameInput').style.borderColor = '';
 
+  // Handle goal creation
+  let goalName = $('taskGoal').value || '';
+  const newGoalName = $('taskNewGoal').value.trim();
+  
+  if (newGoalName) {
+    goalName = newGoalName;
+    // Create goal if it doesn't exist
+    if (!state.goals.find(g => g.name.toLowerCase() === goalName.toLowerCase())) {
+      const newGoal = {
+        id: Math.random().toString(36).substr(2, 9),
+        icon: '🎯',
+        name: goalName,
+        pct: 0,
+        createdDate: new Date().toISOString().split('T')[0],
+        endDate: null,
+        active: true
+      };
+      state.goals.push(newGoal);
+    }
+  }
+
   const task = {
     id:        state.nextId++,
     name,
@@ -810,15 +842,19 @@ $('createTaskBtn').addEventListener('click', () => {
     createdDate: getDateKey(),
     completedDate: null,
     category:  $('taskCategory')?.value || 'todoTasks',
+    goal:      goalName || null,
   };
 
   state.tasks.push(task);
 
   $('taskNameInput').value = '';
   $('taskNote').value      = '';
+  $('taskGoal').value      = '';
+  $('taskNewGoal').value   = '';
 
   closeModal('modalOverlay');
   renderTasks();
+  renderGoals();
   save();
   scheduleMemorySync('task-create');
   showFloatingMsg('Task added!');
@@ -852,12 +888,12 @@ function renderGoals() {
     const isFull = g.pct >= 100;
     const endDateStr = g.endDate ? `<div class="goal-date"><small>Due: ${g.endDate}</small></div>` : '';
     
-    // Calculate consistency: count completed tasks in this goal
+    // Calculate consistency: count tasks linked to this goal
     const completedGoalTasks = (state.tasks || []).filter(t => 
-      t.completed && t.name.toLowerCase().includes(g.name.toLowerCase())
+      t.goal === g.name && t.status === 'done'
     ).length;
     const totalGoalTasks = (state.tasks || []).filter(t => 
-      t.name.toLowerCase().includes(g.name.toLowerCase())
+      t.goal === g.name
     ).length;
     const consistency = totalGoalTasks > 0 
       ? `${completedGoalTasks}/${totalGoalTasks} tasks completed`
