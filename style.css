@@ -1243,6 +1243,15 @@ input, select { outline: none; }
   text-align: right;
 }
 
+.goal-consistency {
+  font-size: 0.65rem;
+  color: rgba(0, 255, 178, 0.75);
+  margin-top: 6px;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
 .goal-edit-row {
   display: flex;
   align-items: center;

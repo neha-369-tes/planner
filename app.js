@@ -834,17 +834,34 @@ function renderGoals() {
   const container = $('goalBars');
   container.innerHTML = '';
   
-  // Only render active goals
-  const activeGoals = (state.goals || []).filter(g => g.active !== false);
+  // Only render active goals with end date set in current year (2026)
+  const currentYear = new Date().getFullYear();
+  const activeGoals = (state.goals || []).filter(g => {
+    if (g.active === false) return false; // Must be active
+    if (!g.endDate) return false;         // Must have an end date
+    const goalYear = new Date(g.endDate).getFullYear();
+    return goalYear === currentYear;      // Must be in current year
+  });
   
   if (activeGoals.length === 0) {
-    container.innerHTML = '<p style="font-size: 0.75rem; color: var(--text-muted); padding: 12px 0; text-align: center;">No active goals. Use "Edit Goals" to manage.</p>';
+    container.innerHTML = '<p style="font-size: 0.75rem; color: var(--text-muted); padding: 12px 0; text-align: center;">No active goals due this year. Use "Edit Goals" to manage.</p>';
     return;
   }
   
   activeGoals.forEach((g, i) => {
     const isFull = g.pct >= 100;
     const endDateStr = g.endDate ? `<div class="goal-date"><small>Due: ${g.endDate}</small></div>` : '';
+    
+    // Calculate consistency: count completed tasks in this goal
+    const completedGoalTasks = (state.tasks || []).filter(t => 
+      t.completed && t.name.toLowerCase().includes(g.name.toLowerCase())
+    ).length;
+    const totalGoalTasks = (state.tasks || []).filter(t => 
+      t.name.toLowerCase().includes(g.name.toLowerCase())
+    ).length;
+    const consistency = totalGoalTasks > 0 
+      ? `${completedGoalTasks}/${totalGoalTasks} tasks completed`
+      : '0 tasks tracked';
     
     container.innerHTML += `
       <div class="goal-item">
@@ -857,6 +874,7 @@ function renderGoals() {
           <div class="goal-bar-fill${isFull ? ' goal-bar-full' : ''}" style="width:${Math.min(g.pct, 100)}%"></div>
         </div>
         ${endDateStr}
+        <div class="goal-consistency"><small>${consistency}</small></div>
       </div>`;
   });
 }
