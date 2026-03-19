@@ -1236,6 +1236,46 @@ input, select { outline: none; }
   box-shadow: 0 0 8px rgba(0,255,178,0.35), inset 0 0 4px rgba(255,255,255,0.24);
 }
 
+.goal-date {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  text-align: right;
+}
+
+.goal-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(240,237,230,0.1);
+}
+
+.goal-edit-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.goal-edit-pct-input,
+.goal-edit-date-input,
+.goal-edit-active {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  transition: border-color var(--transition);
+}
+
+.goal-edit-pct-input:focus,
+.goal-edit-date-input:focus,
+.goal-edit-active:focus {
+  border-color: var(--border-hover);
+  outline: none;
+}
+
 .edit-goals-btn {
   font-family: var(--font-body);
   font-size: 0.68rem;

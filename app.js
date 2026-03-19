@@ -11,9 +11,9 @@ const state = {
     { id: 1, name: 'leetcode',             tag: 'interview', duration: '30m', priority: 'high',   note: 'focus on why, how and where',            status: 'todo', carryOver: false, time: null, createdDate: getDateKey(), completedDate: null },
   ],
   goals: JSON.parse(localStorage.getItem('fs_goals') || 'null') || [
-    { icon: '💼', name: 'Land First Job',   pct: 0   },
-    { icon: '📚', name: 'Learn New Skill',  pct: 100 },
-    { icon: '🌐', name: 'Build Portfolio',  pct: 0   },
+    { id: 1, icon: '💼', name: 'Land First Job',   pct: 0,   createdDate: new Date().toISOString().split('T')[0], endDate: null, active: true },
+    { id: 2, icon: '📚', name: 'Learn New Skill',  pct: 100, createdDate: new Date().toISOString().split('T')[0], endDate: null, active: true },
+    { id: 3, icon: '🌐', name: 'Build Portfolio',  pct: 0,   createdDate: new Date().toISOString().split('T')[0], endDate: null, active: true },
   ],
   blocks: JSON.parse(localStorage.getItem('fs_blocks') || '[]'),
   completionLog: JSON.parse(localStorage.getItem('fs_completionLog') || '{}'),
@@ -135,6 +135,17 @@ function normalizeTaskDates() {
     if (task.status === 'done' && !task.completedDate) task.completedDate = todayKey;
     if (task.status !== 'done') task.completedDate = null;
   });
+}
+
+function normalizeGoals() {
+  const today = new Date().toISOString().split('T')[0];
+  state.goals = (state.goals || []).map((g, i) => ({
+    ...g,
+    id: g.id || i + 1,
+    createdDate: g.createdDate || today,
+    endDate: g.endDate || null,
+    active: g.active !== false,
+  }));
 }
 
 function adjustTodayCompletion(delta) {
@@ -490,23 +501,15 @@ function categorizeTask(task) {
     return 'todoTasks';
   }
 
-  // Task categorization logic based on user schedule
-  const isWeekendAvailable = state.userSchedule.weekendAvailable === true;
-
+  // Task categorization logic based on user schedule and task type
+  
   if (task.tag === 'personal' || task.tag === 'health') {
     return 'personalWorks';
   }
 
   if (task.tag === 'work' || task.tag === 'interview') {
-    // High priority work tasks go to Weekly Tasks
-    if (task.priority === 'high') {
-      return 'weeklyTasks';
-    }
-    // If user has weekend availability and moderate/low priority, can go to Weekend Tasks
-    if (isWeekendAvailable && task.priority !== 'high') {
-      return 'weekendTasks';
-    }
-    // Regular work/interview tasks go to Weekly Tasks
+    // All work/interview tasks go to Weekly Tasks
+    // (Users expecting weekend work should create tasks when planning)
     return 'weeklyTasks';
   }
 
@@ -861,8 +864,19 @@ $('taskNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('
 function renderGoals() {
   const container = $('goalBars');
   container.innerHTML = '';
-  state.goals.forEach((g, i) => {
+  
+  // Only render active goals
+  const activeGoals = (state.goals || []).filter(g => g.active !== false);
+  
+  if (activeGoals.length === 0) {
+    container.innerHTML = '<p style="font-size: 0.75rem; color: var(--text-muted); padding: 12px 0; text-align: center;">No active goals. Use "Edit Goals" to manage.</p>';
+    return;
+  }
+  
+  activeGoals.forEach((g, i) => {
     const isFull = g.pct >= 100;
+    const endDateStr = g.endDate ? `<div class="goal-date"><small>Due: ${g.endDate}</small></div>` : '';
+    
     container.innerHTML += `
       <div class="goal-item">
         <div class="goal-top">
@@ -871,8 +885,9 @@ function renderGoals() {
           <span class="goal-pct${isFull ? ' mint' : ''}">${g.pct}%</span>
         </div>
         <div class="goal-bar-track">
-          <div class="goal-bar-fill${isFull ? ' goal-bar-full' : ''}" style="width:${g.pct}%"></div>
+          <div class="goal-bar-fill${isFull ? ' goal-bar-full' : ''}" style="width:${Math.min(g.pct, 100)}%"></div>
         </div>
+        ${endDateStr}
       </div>`;
   });
 }
@@ -882,13 +897,23 @@ $('editGoalsBtn').addEventListener('click', () => {
   const body = $('goalsModalBody');
   body.innerHTML = '';
   state.goals.forEach((g, i) => {
+    const endDateStr = g.endDate ? g.endDate : '';
     body.innerHTML += `
       <div class="goal-edit-row">
         <span class="goal-edit-icon">${g.icon}</span>
-        <span class="goal-edit-name">${escHtml(g.name)}</span>
-        <input type="number" class="goal-edit-pct-input" data-index="${i}"
-               min="0" max="100" value="${g.pct}" />
-        <span style="font-size:.72rem;color:var(--text-muted)">%</span>
+        <div style="flex: 1;">
+          <span class="goal-edit-name">${escHtml(g.name)}</span>
+          <div style="display: flex; gap: 10px; margin-top: 5px; font-size: 0.7rem;">
+            <input type="number" class="goal-edit-pct-input" data-index="${i}" data-type="pct"
+                   min="0" max="100" value="${g.pct}" placeholder="Progress %" style="width: 70px;" />
+            <input type="date" class="goal-edit-date-input" data-index="${i}" data-type="endDate"
+                   value="${endDateStr}" style="flex: 1;" />
+            <select class="goal-edit-active" data-index="${i}" style="width: 70px;">
+              <option value="1" ${g.active !== false ? 'selected' : ''}>Active</option>
+              <option value="0" ${g.active === false ? 'selected' : ''}>Hidden</option>
+            </select>
+          </div>
+        </div>
       </div>`;
   });
   openModal('goalsModalOverlay');
@@ -903,11 +928,24 @@ $('saveGoalsBtn').addEventListener('click', () => {
     const val = Math.min(100, Math.max(0, parseInt(inp.value) || 0));
     state.goals[i].pct = val;
   });
+  
+  // Save end dates
+  $$('.goal-edit-date-input').forEach(inp => {
+    const i = parseInt(inp.dataset.index);
+    state.goals[i].endDate = inp.value || null;
+  });
+  
+  // Save active status
+  $$('.goal-edit-active').forEach(select => {
+    const i = parseInt(select.dataset.index);
+    state.goals[i].active = select.value === '1';
+  });
+  
   renderGoals();
   closeModal('goalsModalOverlay');
   save();
   scheduleMemorySync('goals-update');
-  showFloatingMsg('Goals updated!');
+  showFloatingMsg('✅ Goals updated!');
 });
 
 // ============================================================
@@ -1866,6 +1904,7 @@ function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function init() {
   bootingPlanner = true;
   normalizeTaskDates();
+  normalizeGoals();
   if (localStorage.getItem('fs_import_cleanup_v1') !== '1') {
     purgeLegacyImportedTasks();
     localStorage.setItem('fs_import_cleanup_v1', '1');
@@ -1900,7 +1939,12 @@ window.__fs_onDataLoaded = function(cloudData) {
 
   // Merge cloud fields into state (cloud wins over stale localStorage)
   if (Array.isArray(cloudData.tasks))        state.tasks         = cloudData.tasks;
-  if (Array.isArray(cloudData.goals))        state.goals         = cloudData.goals;
+  if (Array.isArray(cloudData.goals))        state.goals         = cloudData.goals.map(g => ({
+    ...g,
+    active: g.active !== false,
+    createdDate: g.createdDate || new Date().toISOString().split('T')[0],
+    endDate: g.endDate || null,
+  }));
   if (Array.isArray(cloudData.blocks))       state.blocks        = cloudData.blocks;
   if (cloudData.completionLog)               state.completionLog = cloudData.completionLog;
   if (cloudData.monthChecks)                 state.monthChecks   = cloudData.monthChecks;
