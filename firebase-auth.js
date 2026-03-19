@@ -59,8 +59,8 @@ function buildAuthOverlay() {
 
       <!-- LOGIN -->
       <div class="auth-form" id="loginForm">
-        <input class="auth-input" type="email"    id="loginEmail"    placeholder="Email address" autocomplete="email" />
-        <input class="auth-input" type="password" id="loginPassword" placeholder="Password"      autocomplete="current-password" />
+        <input class="auth-input" type="email"    id="loginEmail"    placeholder="Email address" autocomplete="email" required />
+        <input class="auth-input" type="password" id="loginPassword" placeholder="Password"      autocomplete="current-password" required minlength="6" />
         <button class="auth-btn-primary" id="loginBtn">Sign In</button>
         <div class="auth-divider"><span>or</span></div>
         <button class="auth-btn-google" id="googleLoginBtn">
@@ -77,9 +77,9 @@ function buildAuthOverlay() {
 
       <!-- SIGNUP -->
       <div class="auth-form hidden" id="signupForm">
-        <input class="auth-input" type="text"     id="signupName"     placeholder="Display name" autocomplete="name" />
-        <input class="auth-input" type="email"    id="signupEmail"    placeholder="Email address" autocomplete="email" />
-        <input class="auth-input" type="password" id="signupPassword" placeholder="Password (min 6 chars)" autocomplete="new-password" />
+        <input class="auth-input" type="text"     id="signupName"     placeholder="Display name" autocomplete="name" required />
+        <input class="auth-input" type="email"    id="signupEmail"    placeholder="Email address" autocomplete="email" required />
+        <input class="auth-input" type="password" id="signupPassword" placeholder="Password (min 6 chars)" autocomplete="new-password" required minlength="6" />
         <button class="auth-btn-primary" id="signupBtn">Create Account</button>
         <div class="auth-divider"><span>or</span></div>
         <button class="auth-btn-google" id="googleSignupBtn">
@@ -248,9 +248,14 @@ function bindAuthEvents() {
   // LOGIN
   document.getElementById('loginBtn').addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value.trim();
-    const pass  = document.getElementById('loginPassword').value;
+    const pass  = document.getElementById('loginPassword').value; // don't trim password
     setAuthError('loginError', '');
-    if (!email || !pass) { setAuthError('loginError', 'Enter your email and password.'); return; }
+    
+    // Strict validation - password cannot be empty or whitespace-only
+    if (!email) { setAuthError('loginError', 'Enter your email address.'); return; }
+    if (!pass || pass.length === 0) { setAuthError('loginError', 'Enter your password.'); return; }
+    if (pass.length < 6) { setAuthError('loginError', 'Password must be at least 6 characters.'); return; }
+    
     setLoading('loginBtn', true);
     try {
       await signInWithEmailAndPassword(auth, email, pass);

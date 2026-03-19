@@ -199,6 +199,26 @@
     <!-- RIGHT COLUMN: Goals, Schedule, AI -->
     <aside class="col-right">
 
+      <!-- Agent Planner Chat -->
+      <section class="chat-panel">
+        <div class="planner-chat-shell">
+          <div class="planner-chat-head">
+            <h4>Agent Chat</h4>
+            <span>DeepSeek + Memory</span>
+          </div>
+
+          <div class="planner-chat-log" id="plannerChatLog"></div>
+          <p class="planner-import-status" id="plannerImportStatus">Ask about your schedule...</p>
+
+          <input class="planner-import-input" type="file" id="taskDocInput" accept=".txt,.md,.csv,.xlsx,.xls,.docx,.pdf" hidden />
+          <div class="planner-chat-composer">
+            <button id="uploadDocBtn" class="planner-upload-btn" title="Upload document" aria-label="Upload document">+</button>
+            <input id="plannerChatInput" class="planner-chat-input" type="text" placeholder="Ask anything..." />
+            <button id="plannerChatSendBtn" class="planner-chat-send" title="Send message" aria-label="Send message">Send</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Career Goals -->
       <section class="goals-panel">
         <h3 class="panel-title"><span class="panel-icon">🏆</span> Career Goals</h3>
@@ -237,28 +257,11 @@
         <button class="edit-goals-btn" id="editGoalsBtn">⚙ Edit Goals</button>
       </section>
 
-    </aside>
   </main>
 
   <section class="agent-bottom-wrap">
     <!-- AI Suggestion -->
     <section class="ai-panel">
-      <div class="planner-chat-shell">
-        <div class="planner-chat-head">
-          <h4>Agent Planner Chat</h4>
-          <span>DeepSeek + Memory</span>
-        </div>
-
-        <div class="planner-chat-log" id="plannerChatLog"></div>
-        <p class="planner-import-status" id="plannerImportStatus">Upload a plan document or ask directly in chat.</p>
-
-        <input class="planner-import-input" type="file" id="taskDocInput" accept=".txt,.md,.csv,.xlsx,.xls,.docx,.pdf" hidden />
-        <div class="planner-chat-composer">
-          <button id="uploadDocBtn" class="planner-upload-btn" title="Upload document" aria-label="Upload document">+</button>
-          <input id="plannerChatInput" class="planner-chat-input" type="text" placeholder="Ask anything about your schedule..." />
-          <button id="plannerChatSendBtn" class="planner-chat-send" title="Send message" aria-label="Send message">Send</button>
-        </div>
-      </div>
       <button class="ai-chip" id="aiChip">
         <span class="ai-pulse"></span>
         <span class="ai-text">✦ What's next?</span>

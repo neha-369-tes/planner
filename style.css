@@ -3,7 +3,7 @@
   Font: Bebas Neue (display) + DM Sans (body)
   ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 /* ── Tokens ─────────────────────────────────────────────── */
 :root {
@@ -36,7 +36,7 @@
   --radius-lg:   24px;
   --radius-pill: 100px;
   --font-display:'Bebas Neue', Impact, sans-serif;
-  --font-body:   'Bebas Neue', Impact, sans-serif;
+  --font-body:   'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --transition:  0.18s ease;
 }
 
@@ -347,6 +347,148 @@ main.dashboard-grid {
 .col-right::after {
   left: -1px;
   background: linear-gradient(270deg, transparent, rgba(255,255,255,0.06));
+}
+
+/* ── Chat Panel (Sidebar) ───────────────────────────────── */
+.chat-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(var(--glass-blur));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-panel .planner-chat-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.planner-chat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.planner-chat-head h4 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--mint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.planner-chat-head span {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.planner-chat-log {
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planner-chat-log .chat-msg {
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.planner-chat-log .chat-msg.user {
+  background: var(--mint-dim);
+  color: var(--mint);
+  align-self: flex-end;
+  max-width: 85%;
+}
+
+.planner-chat-log .chat-msg.assistant {
+  background: var(--lavender-dim);
+  color: var(--lavender);
+  align-self: flex-start;
+  max-width: 85%;
+}
+
+.planner-chat-composer {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.planner-upload-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  color: var(--mint);
+  font-size: 0.9rem;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.planner-upload-btn:hover {
+  background: var(--mint-dim);
+  border-color: var(--mint);
+}
+
+.planner-chat-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  transition: all var(--transition);
+}
+
+.planner-chat-input::placeholder {
+  color: var(--text-dim);
+}
+
+.planner-chat-input:focus {
+  border-color: var(--mint);
+  background: rgba(0, 255, 178, 0.05);
+}
+
+.planner-chat-send {
+  width: 50px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--mint), rgba(0, 255, 178, 0.7));
+  border: 1px solid var(--border-mint);
+  color: var(--bg);
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.planner-chat-send:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 178, 0.3);
+}
+
+.planner-chat-send:active {
+  transform: translateY(0);
 }
 
 /* ── Panel Titles ───────────────────────────────────────── */

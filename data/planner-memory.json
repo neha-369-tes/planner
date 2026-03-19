@@ -13139,6 +13139,166 @@
       "tag": "work",
       "priority": "medium",
       "createdAt": "2026-03-19T07:16:30.895Z"
+    },
+    {
+      "id": "1773905875346-u6thlj2",
+      "source": "planner-ui",
+      "type": "profile",
+      "content": "User mood=Tired; streak=1; level=1; sessions=0; reason=init",
+      "mood": "Tired",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:37:55.347Z"
+    },
+    {
+      "id": "1773905875347-pdix5gj",
+      "source": "planner-ui",
+      "type": "goals",
+      "content": "Goals: Land First Job=0%; Learn New Skill=100%; Build Portfolio=0%",
+      "mood": "",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:37:55.347Z"
+    },
+    {
+      "id": "1773905875347-s2s17ob",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: leetcode; priority=high; duration=30m; note=focus on why, how and where",
+      "mood": "",
+      "tag": "interview",
+      "priority": "high",
+      "createdAt": "2026-03-19T07:37:55.347Z"
+    },
+    {
+      "id": "1773905875347-0nwvg4c",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: Review project brief; priority=medium; duration=45m; note=From yesterday — don't forget this one",
+      "mood": "",
+      "tag": "work",
+      "priority": "medium",
+      "createdAt": "2026-03-19T07:37:55.347Z"
+    },
+    {
+      "id": "1773905880945-a5y1f6p",
+      "source": "planner-ui",
+      "type": "profile",
+      "content": "User mood=Tired; streak=1; level=1; sessions=0; reason=mood-change",
+      "mood": "Tired",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:38:00.945Z"
+    },
+    {
+      "id": "1773905880945-ulo322p",
+      "source": "planner-ui",
+      "type": "goals",
+      "content": "Goals: Land First Job=0%; Learn New Skill=100%; Build Portfolio=0%",
+      "mood": "",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:38:00.945Z"
+    },
+    {
+      "id": "1773905880945-calv4kk",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: leetcode; priority=high; duration=30m; note=focus on why, how and where",
+      "mood": "",
+      "tag": "interview",
+      "priority": "high",
+      "createdAt": "2026-03-19T07:38:00.945Z"
+    },
+    {
+      "id": "1773905880945-cj6p2vt",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: Review project brief; priority=medium; duration=45m; note=From yesterday — don't forget this one",
+      "mood": "",
+      "tag": "work",
+      "priority": "medium",
+      "createdAt": "2026-03-19T07:38:00.945Z"
+    },
+    {
+      "id": "1773906550447-s9j2woa",
+      "source": "planner-ui",
+      "type": "profile",
+      "content": "User mood=Tired; streak=1; level=1; sessions=0; reason=init",
+      "mood": "Tired",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:49:10.447Z"
+    },
+    {
+      "id": "1773906550447-6fvb9zw",
+      "source": "planner-ui",
+      "type": "goals",
+      "content": "Goals: Land First Job=0%; Learn New Skill=100%; Build Portfolio=0%",
+      "mood": "",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:49:10.447Z"
+    },
+    {
+      "id": "1773906550447-3udd25k",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: leetcode; priority=high; duration=30m; note=focus on why, how and where",
+      "mood": "",
+      "tag": "interview",
+      "priority": "high",
+      "createdAt": "2026-03-19T07:49:10.447Z"
+    },
+    {
+      "id": "1773906550447-5gchm9q",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: Review project brief; priority=medium; duration=45m; note=From yesterday — don't forget this one",
+      "mood": "",
+      "tag": "work",
+      "priority": "medium",
+      "createdAt": "2026-03-19T07:49:10.447Z"
+    },
+    {
+      "id": "1773906562049-av80y71",
+      "source": "planner-ui",
+      "type": "profile",
+      "content": "User mood=Tired; streak=1; level=1; sessions=0; reason=mood-change",
+      "mood": "Tired",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:49:22.049Z"
+    },
+    {
+      "id": "1773906562049-glsr8qf",
+      "source": "planner-ui",
+      "type": "goals",
+      "content": "Goals: Land First Job=0%; Learn New Skill=100%; Build Portfolio=0%",
+      "mood": "",
+      "tag": "",
+      "priority": "",
+      "createdAt": "2026-03-19T07:49:22.049Z"
+    },
+    {
+      "id": "1773906562049-s13v8ka",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: leetcode; priority=high; duration=30m; note=focus on why, how and where",
+      "mood": "",
+      "tag": "interview",
+      "priority": "high",
+      "createdAt": "2026-03-19T07:49:22.049Z"
+    },
+    {
+      "id": "1773906562049-kkmif4w",
+      "source": "planner-ui",
+      "type": "task",
+      "content": "Task: Review project brief; priority=medium; duration=45m; note=From yesterday — don't forget this one",
+      "mood": "",
+      "tag": "work",
+      "priority": "medium",
+      "createdAt": "2026-03-19T07:49:22.049Z"
     }
   ]
 }
