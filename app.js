@@ -497,19 +497,17 @@ function saveSurveyData() {
 }
 
 function categorizeTask(task) {
-  if (!state.userSchedule || !state.userSchedule.profileCompleted) {
-    return 'todoTasks';
+  // If user manually selected a category, use it
+  if (task.category && ['weeklyTasks', 'weekendTasks', 'personalWorks', 'todoTasks'].includes(task.category)) {
+    return task.category;
   }
-
-  // Task categorization logic based on user schedule and task type
   
+  // Otherwise use defaults based on tag/priority
   if (task.tag === 'personal' || task.tag === 'health') {
     return 'personalWorks';
   }
 
   if (task.tag === 'work' || task.tag === 'interview') {
-    // All work/interview tasks go to Weekly Tasks
-    // (Users expecting weekend work should create tasks when planning)
     return 'weeklyTasks';
   }
 
@@ -782,41 +780,11 @@ $$('.filter-tab').forEach(tab => {
 // ── Add Task Modal ─────────────────────────────────────────
 function openModal(id) {
   const el = $(id);
-  if (el) {
-    el.classList.add('open');
-    if (id === 'modalOverlay') updateTaskCategoryPreview();
-  }
+  if (el) el.classList.add('open');
 }
 function closeModal(id) {
   const el = $(id);
   if (el) el.classList.remove('open');
-}
-
-function updateTaskCategoryPreview() {
-  const tag = $('taskTag')?.value || 'learning';
-  const priority = $('taskPriority')?.value || 'medium';
-  
-  const tempTask = { tag, priority, status: 'todo' };
-  const category = categorizeTask(tempTask);
-  
-  const categoryIcons = {
-    'weeklyTasks': '📅 Weekly Tasks',
-    'weekendTasks': '🎉 Weekend Tasks',
-    'personalWorks': '💼 Personal Works',
-    'todoTasks': '📋 To Do'
-  };
-  
-  const preview = $('taskCategoryPreview');
-  if (preview) {
-    preview.textContent = categoryIcons[category] || '📋 To Do';
-    preview.style.background = 'rgba(0, 255, 178, 0.15)';
-    preview.style.border = '1px solid rgba(0, 255, 178, 0.3)';
-    preview.style.borderRadius = 'var(--radius-sm)';
-    preview.style.padding = '6px 10px';
-    preview.style.fontSize = '0.75rem';
-    preview.style.fontWeight = '500';
-    preview.style.color = 'var(--mint)';
-  }
 }
 
 $('addTaskBtn').addEventListener('click',  () => openModal('modalOverlay'));
@@ -841,6 +809,7 @@ $('createTaskBtn').addEventListener('click', () => {
     time:      null,
     createdDate: getDateKey(),
     completedDate: null,
+    category:  $('taskCategory')?.value || 'todoTasks',
   };
 
   state.tasks.push(task);
@@ -1140,6 +1109,16 @@ async function rebuildScheduleFromCurrentTasks() {
 }
 
 function addChatTask(taskName, opts = {}) {
+  // Infer category based on tag and priority
+  let category = 'todoTasks';
+  if ((opts.tag === 'work' || opts.tag === 'interview') && opts.priority === 'high') {
+    category = 'weeklyTasks';
+  } else if (opts.tag === 'work' || opts.tag === 'interview') {
+    category = 'weeklyTasks';
+  } else if (opts.tag === 'personal' || opts.tag === 'health') {
+    category = 'personalWorks';
+  }
+  
   const task = {
     id: state.nextId++,
     name: taskName,
@@ -1152,6 +1131,7 @@ function addChatTask(taskName, opts = {}) {
     time: null,
     createdDate: opts.createdDate || getDateKey(),
     completedDate: null,
+    category: opts.category || category,
   };
   state.tasks.push(task);
   return task;

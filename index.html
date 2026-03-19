@@ -274,7 +274,7 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Tag</label>
-            <select class="form-input form-select" id="taskTag" onchange="updateTaskCategoryPreview()">
+            <select class="form-input form-select" id="taskTag">
               <option value="interview">Interview</option>
               <option value="work">Work</option>
               <option value="learning">Learning</option>
@@ -294,7 +294,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Priority</label>
-            <select class="form-input form-select" id="taskPriority" onchange="updateTaskCategoryPreview()">
+            <select class="form-input form-select" id="taskPriority">
               <option value="high">High</option>
               <option value="medium" selected>Medium</option>
               <option value="low">Low</option>
@@ -302,10 +302,16 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group" style="flex: 1;">
-            <label class="form-label">Preview:</label>
-            <div id="taskCategoryPreview" class="category-badge">📋 To Do</div>
+          <div class="form-group">
+            <label class="form-label">Add to Column:</label>
+            <select class="form-input form-select" id="taskCategory">
+              <option value="weeklyTasks">📅 Weekly Tasks</option>
+              <option value="weekendTasks">🎉 Weekend Tasks</option>
+              <option value="personalWorks">💼 Personal Works</option>
+              <option value="todoTasks" selected>📋 To Do</option>
+            </select>
           </div>
+        </div>
         <div class="form-group">
           <label class="form-label">Note <span class="optional">(optional)</span></label>
           <input type="text" class="form-input" id="taskNote" placeholder="Any context or intention..." />
